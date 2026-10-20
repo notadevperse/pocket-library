@@ -1,0 +1,94 @@
+# Once a month: download the four public datasets, re-check every game in
+# ratings.json, look up the three apps' latest releases, rebuild the website
+# and the skill zip, run the tests, and open a pull request with the result if anything
+# changed. Nothing reaches the website until the pull request is merged; then GitHub
+# Pages updates by itself.
+#
+# Needs one setting: Settings → Actions → General → Workflow permissions →
+# "Allow GitHub Actions to create and approve pull requests".
+#
+# Uses only public data and GitHub's own tools: no keys, no servers, nothing from Steam.
+# Games checked by hand keep their weight, status, and notes. Run it by hand any time
+# from the Actions tab: "Monthly data refresh" → "Run workflow".
+name: Monthly data refresh
+
+on:
+  schedule:
+    - cron: '23 6 3 * *'   # the 3rd of each month, after ProtonDB's monthly export
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Download the public datasets
+        run: bash pocket-library/scripts/fetch-sources.sh "$RUNNER_TEMP/sources"
+
+      - name: Re-check every game
+        run: |
+          python -I pocket-library/scripts/evidence.py --ratings pocket-library/ratings.json --all \
+            --sources "$RUNNER_TEMP/sources" --out pocket-library/ratings.json \
+            --review "$RUNNER_TEMP/review.json" | tee "$RUNNER_TEMP/summary.txt"
+
+      - name: Check the apps' latest releases
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -I pocket-library/scripts/check_apps.py --out pocket-library/apps.json
+
+      - name: Rebuild the website and the skill zip
+        run: |
+          python -I pocket-library/scripts/make_web.py
+          python -I pocket-library/scripts/make_zip.py
+
+      - name: Tests
+        run: python -m unittest discover tests -v
+
+      - name: Open a pull request if anything changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git add pocket-library/ratings.json pocket-library/apps.json index.html pocket-library-skill.zip
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          month=$(date -u +%Y-%m)
+          branch="data-refresh/$month"
+          {
+            echo "Monthly data refresh, $month"
+            echo
+            cat "$RUNNER_TEMP/summary.txt"
+            echo
+            echo "Thank you to ProtonDB, GameNative, PCGameBenchmarks, and AreWeAntiCheatYet for publishing their data."
+          } > "$RUNNER_TEMP/message.txt"
+          git switch -c "$branch"
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q -F "$RUNNER_TEMP/message.txt"
+          git push --force origin "$branch"
+          if [ -z "$(gh pr list --head "$branch" --state open --json number --jq '.[].number')" ]; then
+            {
+              cat "$RUNNER_TEMP/message.txt"
+              echo
+              echo "The tests passed. Look over the changes, then click **Merge pull request** to publish them,"
+              echo "or close this pull request to skip this month."
+            } > "$RUNNER_TEMP/body.txt"
+            gh pr create --base main --head "$branch" --title "Monthly data refresh, $month" --body-file "$RUNNER_TEMP/body.txt"
+          fi

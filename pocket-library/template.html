@@ -1,0 +1,1118 @@
+<title>Pocket Library</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one device-width column; a sticky control deck on top, a dense list below. */
+:root {
+  --bg: #eef1f4; --surface: #ffffff; --line: #d7dde4; --fg: #141a21; --muted: #5b6673; --accent: #2a5bd7;
+  --light: #1f8a4c;   --light-bg: #dff3e7;
+  --medium: #1c6fa8;  --medium-bg: #ddeefa;
+  --heavy: #a3600a;   --heavy-bg: #fbecd3;
+  --no: #b3312b;      --no-bg: #f9e0de;
+  --unknown: #5b6673; --unknown-bg: #e6eaef;
+  --other: #6d5aa8;   --other-bg: #ebe6f7;
+  --display: "Chakra Petch", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1318; --surface: #171c23; --line: #262e38; --fg: #e6ebf1; --muted: #8b97a6; --accent: #7aa2ff;
+    --light: #5fd394;   --light-bg: #12301f;
+    --medium: #6cb8ec;  --medium-bg: #10283a;
+    --heavy: #f0b35a;   --heavy-bg: #33240d;
+    --no: #f08079;      --no-bg: #361615;
+    --unknown: #9aa6b4; --unknown-bg: #1f262f;
+    --other: #b5a3f0;   --other-bg: #241e3a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1318; --surface: #171c23; --line: #262e38; --fg: #e6ebf1; --muted: #8b97a6; --accent: #7aa2ff;
+  --light: #5fd394;   --light-bg: #12301f;
+  --medium: #6cb8ec;  --medium-bg: #10283a;
+  --heavy: #f0b35a;   --heavy-bg: #33240d;
+  --no: #f08079;      --no-bg: #361615;
+  --unknown: #9aa6b4; --unknown-bg: #1f262f;
+  --other: #b5a3f0;   --other-bg: #241e3a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.4; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+a { color: var(--accent); }
+h1 { font-family: var(--display); font-weight: 700; font-size: 1.45rem; letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+code, .path { font-family: var(--mono); font-size: 0.8rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 1px 5px; overflow-wrap: anywhere; }
+
+.wrap {
+  max-width: 760px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Control deck */
+header.deck { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+header.deck .wrap { padding-block: 12px 10px; display: grid; gap: 10px; }
+.titlerow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.sub { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.meter { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--line); }
+.meter span { display: block; height: 100%; background: var(--c); }
+.search { position: relative; }
+.search input { width: 100%; font: inherit; font-size: 16px; padding: 10px 36px 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+.search input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.search button { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--muted); font-size: 18px; width: 32px; height: 32px; cursor: pointer; border-radius: 8px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; margin-inline: -4px; padding-inline: 4px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; font: 500 0.82rem var(--body); border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 6px 10px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.chip .n { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--muted)); }
+.chip[aria-pressed="true"] { border-color: var(--c, var(--accent)); background: var(--cbg, var(--bg)); color: var(--c, var(--accent)); }
+.chip[aria-pressed="true"] .n { color: inherit; }
+#colls .chip[aria-pressed="true"] { border-color: var(--fg); background: var(--fg); color: var(--surface); }
+#colls .chip[aria-pressed="true"] .n { color: var(--surface); }
+.tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-wrap: wrap; }
+.seg button { font: 500 0.78rem var(--body); border: 0; background: transparent; color: var(--muted); padding: 6px 10px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--surface); }
+.deckbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.filters { display: grid; gap: 10px; }
+.fbtn { display: none; font: 600 0.8rem var(--body); border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.fbtn .on { font-size: 0.74rem; max-width: 9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--surface); background: var(--accent); border-radius: 999px; padding: 1px 6px; margin-left: 6px; }
+.fbtn::after { content: "▾"; margin-left: 6px; color: var(--muted); }
+.fbtn[aria-expanded="true"]::after { content: "▴"; }
+.fbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* On a phone, collections, sort, input, and reports fold behind the Filters button. */
+@media (max-width: 699px) {
+  .fbtn { display: inline-flex; align-items: center; }
+  .filters { display: none; }
+  .deck.open .filters { display: grid; }
+}
+.count { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip:focus-visible, .seg button:focus-visible, .btn:focus-visible, .more:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Cards: intro, instructions, legend */
+main > .wrap { padding-block: 12px 40px; display: grid; gap: 12px; }
+.card { padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: grid; gap: 10px; font-size: 0.9rem; min-width: 0; }
+.card > summary { cursor: pointer; font-family: var(--display); font-weight: 600; font-size: 1.05rem; }
+.card h2 { font: 600 0.72rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 6px 0 0; }
+.card p { margin: 0; max-width: 65ch; }
+.steps { margin: 0; padding-left: 18px; display: grid; gap: 8px; }
+.steps li { max-width: 65ch; }
+.steps q { display: block; quotes: none; font-family: var(--mono); font-size: 0.8rem; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-top: 4px; }
+.option { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 8px; }
+.option b.title { font-family: var(--display); font-size: 1rem; }
+.codebox { display: block; width: 100%; margin-top: 4px; font: 0.72rem/1.4 var(--mono); background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; resize: vertical; word-break: break-all; }
+.btn { font: 600 0.88rem var(--body); padding: 9px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.btnrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.status { font-size: 0.82rem; color: var(--muted); }
+.apps { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.app-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 4px; min-width: 0; align-content: start; }
+.app-card b { font-family: var(--display); font-size: 1rem; }
+.app-card span { color: var(--muted); font-size: 0.82rem; }
+.app-card .ver { font-family: var(--mono); font-size: 0.75rem; color: var(--fg); }
+.app-card a { font-size: 0.82rem; overflow-wrap: anywhere; }
+.tips, .legend ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+.tips li, .legend li { max-width: 65ch; }
+.legend li { color: var(--muted); }
+.legend b { color: var(--fg); }
+.device { gap: 6px; }
+.dev-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-family: var(--display); font-size: 1.05rem; }
+.dev-full .pill { --c: var(--light); --cbg: var(--light-bg); }
+.dev-limited .pill { --c: var(--heavy); --cbg: var(--heavy-bg); }
+.dev-other .pill { --c: var(--no); --cbg: var(--no-bg); }
+
+/* The web version: device picker, file picker, and library actions */
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.btn:disabled { opacity: 0.55; cursor: progress; }
+.field { display: grid; gap: 4px; font-size: 0.82rem; color: var(--muted); min-width: 0; }
+.field select, .field input { width: 100%; font: inherit; font-size: 16px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; }
+.field select:focus-visible, .field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.fields { display: grid; gap: 10px; }
+.choices { display: grid; gap: 6px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.choice { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; align-items: start; border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; cursor: pointer; background: var(--surface); }
+.choice input { margin: 3px 0 0; accent-color: var(--accent); }
+.choice b { font-size: 0.9rem; }
+.choice span { grid-column: 2; font-size: 0.78rem; color: var(--muted); }
+.choice:has(input:checked) { border-color: var(--accent); background: var(--bg); }
+.choice:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+#mine { display: grid; gap: 12px; }
+#mine > details > summary { font-family: var(--body); font-weight: 600; font-size: 0.95rem; }
+#mine .sumdev { color: var(--muted); font-weight: 500; }
+.notice { border: 1px solid var(--accent); background: var(--bg); border-radius: 10px; padding: 10px 12px; font-size: 0.86rem; }
+.notice b { color: var(--accent); }
+body.dropping main .wrap { outline: 2px dashed var(--accent); outline-offset: 6px; border-radius: 12px; }
+
+/* The game list */
+#out { display: grid; gap: 8px; min-width: 0; }
+.group-h {
+  justify-self: start; display: inline-flex; align-items: center; gap: 8px; margin-top: 10px;
+  font: 600 0.72rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--c); background: var(--cbg); border: 1px solid var(--c); border-radius: 999px; padding: 4px 12px;
+}
+.group-h:first-child { margin-top: 0; }
+.group-h .n { font-variant-numeric: tabular-nums; opacity: 0.8; }
+ul.list { list-style: none; margin: 0; padding: 0; display: grid; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+li.g { display: grid; grid-template-columns: 4px 1fr; border-top: 1px solid var(--line); }
+li.g:first-child { border-top: 0; }
+li.g .stripe { background: var(--c); }
+li.g .body { padding: 10px 12px; min-width: 0; display: grid; gap: 4px; }
+.name { font-weight: 600; font-size: 0.98rem; overflow-wrap: anywhere; }
+.name a { color: inherit; text-decoration: underline; text-decoration-color: var(--line); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.name a:hover { color: var(--accent); text-decoration-color: currentColor; }
+.name a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+.meta, .reports { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.78rem; color: var(--muted); }
+.pill { font: 600 0.68rem var(--mono); letter-spacing: 0.04em; text-transform: uppercase; color: var(--c); background: var(--cbg); padding: 2px 7px; border-radius: 5px; }
+.input { font: 600 0.68rem var(--mono); letter-spacing: 0.04em; text-transform: uppercase; padding: 1px 6px; border-radius: 5px; border: 1px solid var(--line); color: var(--muted); }
+.input.i-t { color: var(--accent); border-color: var(--accent); }
+.input.i-o { color: var(--fg); }
+.app { color: var(--fg); font-weight: 500; }
+.hours, .added, .basis { font-family: var(--mono); font-size: 0.72rem; font-variant-numeric: tabular-nums; }
+.basis { color: var(--muted); }
+.rep { font-size: 0.75rem; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.rep::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; background: var(--c, var(--muted)); vertical-align: 1px; }
+.rep.ok { --c: var(--light); } .rep.mid { --c: var(--heavy); } .rep.bad { --c: var(--no); }
+.note { font-size: 0.82rem; color: var(--muted); }
+.heads { font-size: 0.8rem; color: var(--heavy); }
+.heads::before { content: "Heads-up: "; font-weight: 600; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { font-size: 0.72rem; padding: 1px 7px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); }
+.empty { padding: 28px 16px; text-align: center; color: var(--muted); }
+.more { width: 100%; font: 600 0.88rem var(--body); padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--accent); cursor: pointer; }
+footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+.t-light { --c: var(--light); --cbg: var(--light-bg); }
+.t-medium { --c: var(--medium); --cbg: var(--medium-bg); }
+.t-heavy { --c: var(--heavy); --cbg: var(--heavy-bg); }
+.t-android { --c: var(--accent); --cbg: var(--bg); }
+.t-unknown { --c: var(--unknown); --cbg: var(--unknown-bg); }
+.t-no { --c: var(--no); --cbg: var(--no-bg); }
+.t-other { --c: var(--other); --cbg: var(--other-bg); }
+@media (prefers-reduced-motion: no-preference) {
+  .chip, .seg button { transition: background .15s, color .15s, border-color .15s; }
+}
+</style>
+
+<header class="deck" id="deck" hidden>
+  <div class="wrap">
+    <div class="titlerow">
+      <h1>Pocket Library</h1>
+      <span class="sub" id="sub"></span>
+    </div>
+    <div class="meter" id="meter" aria-hidden="true"></div>
+    <div class="search">
+      <input id="q" type="search" placeholder="Search your games" autocomplete="off" aria-label="Search games">
+      <button id="clear" type="button" aria-label="Clear search" hidden>×</button>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Filter by weight"></div>
+    <div class="deckbar">
+      <span class="count" id="count"></span>
+      <button type="button" class="fbtn" id="fbtn" aria-expanded="false" aria-controls="filters">Filters</button>
+    </div>
+    <div class="filters" id="filters">
+    <div class="chips" id="colls" role="group" aria-label="Filter by your Steam collection"></div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Sort">
+        <button type="button" data-sort="weight" aria-pressed="true">Weight</button>
+        <button type="button" data-sort="az" aria-pressed="false">A–Z</button>
+        <button type="button" data-sort="hours" aria-pressed="false">Most played</button>
+        <button type="button" data-sort="new" aria-pressed="false" id="sort-new" hidden>Newest</button>
+      </div>
+      <div class="seg" role="group" aria-label="Input">
+        <button type="button" data-input="all" aria-pressed="true">Any input</button>
+        <button type="button" data-input="touch" aria-pressed="false">Touch</button>
+        <button type="button" data-input="touchok" aria-pressed="false">Touch + OK</button>
+      </div>
+      <div class="seg" role="group" aria-label="Reports">
+        <button type="button" data-reports="all" aria-pressed="true">All reports</button>
+        <button type="button" data-reports="clean" aria-pressed="false">No problems reported</button>
+      </div>
+    </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <section class="card device" id="device" hidden></section>
+
+    <section class="card" id="intro">
+      <h1>Pocket Library</h1>
+      <p>This page is empty until Claude fills it with your Steam library. It shows which of your games can run on an Android phone or handheld with DroidDeck, GameNative, or GameHub Lite, filtered by your Steam collections and playtime.</p>
+      <p>To fill it: get your games list (steps below), start a chat with Claude, attach the file, and say <b>"Fill my Pocket Library. My device is a [your phone or handheld]."</b> Claude looks up its chip and adjusts the ratings for it.</p>
+      <p>Don't use Claude? <a href="https://notadevperse.github.io/pocket-library/" target="_blank" rel="noopener">Open the website instead</a>. It does the same in your browser, and your files stay on your device.</p>
+    </section>
+
+    <section class="card" id="web-intro" hidden>
+      <h1>Pocket Library</h1>
+      <p>Check which of your Steam games can run on an Android phone or handheld with DroidDeck, GameNative, or GameHub Lite, filtered by your Steam collections and playtime.</p>
+      <p><b>Your files stay on this device.</b> This page reads them in your browser and remembers your library in this browser only. Nothing is uploaded, and there's no account, no tracking, and no AI involved.</p>
+      <div class="option">
+        <b class="title">1. Your device</b>
+        <div class="fields" data-device-fields></div>
+      </div>
+      <div class="option">
+        <b class="title">2. Your games</b>
+        <p>Open <code>steam-games.json</code> or <code>steam-licenses.json</code> (or both), and your collections file if you want it. The steps under <b>Get your games list</b> below make them. You can also drop the files onto this page.</p>
+        <div class="btnrow">
+          <button class="btn primary" type="button" data-open-files>Open my files</button>
+          <button class="btn" type="button" data-example>Try an example library</button>
+        </div>
+        <span class="status" data-web-status role="status"></span>
+      </div>
+    </section>
+
+    <div id="mine" hidden></div>
+    <input type="file" id="files" accept=".json,application/json" multiple hidden>
+
+    <details class="card" id="getlist">
+      <summary>Get your games list</summary>
+      <p>Do this once on a computer, in Chrome or Edge. Each option is a bookmark that reads a Steam page you already have open and saves a file to your Downloads. Nothing is sent anywhere. Use one or both.</p>
+      <div class="option">
+        <b class="title">Option 1: games and playtime</b>
+        <p>Gives every game with your playtime. Needs your Steam games page, which works for your own account even if it's private.</p>
+        <ol class="steps">
+          <li>Copy this code:
+            <textarea id="bm-games" class="codebox" readonly rows="4" aria-label="Bookmark code, option 1">javascript:(() =&gt; { const help = &#x27;Open your Steam games page first (steamcommunity.com/my/games/?tab=all), wait for your games to show, then click this bookmark again.&#x27;; function save(fileName, data) { const link = document.createElement(&#x27;a&#x27;); link.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: &#x27;application/json&#x27; })); link.download = fileName; document.body.appendChild(link); link.click(); link.remove(); } try { const pageData = JSON.parse(window.SSR.renderContext.queryData); const owned = pageData.queries.find(q =&gt; q.queryKey[0] === &#x27;OwnedGames&#x27;); const games = owned.state.data.map(g =&gt; ({ appid: g.appid, name: g.name, minutes: g.playtime_forever || 0 })); save(&#x27;steam-games.json&#x27;, { source: &#x27;pocket-library&#x27;, kind: &#x27;games&#x27;, saved: new Date().toISOString(), games: games }); } catch (err) { alert(help); } })();</textarea>
+            <div class="btnrow"><button class="btn" type="button" data-copy="bm-games">Copy code</button><span class="status" data-copied="bm-games"></span></div></li>
+          <li>Right-click your bookmarks bar, choose <b>Add page</b>, name it <b>Get my Steam games</b>, and paste the code into the <b>URL</b> box. Save.</li>
+          <li>Open <span class="path">steamcommunity.com/my/games/?tab=all</span>, sign in if asked, and wait for your games to show.</li>
+          <li>Click the bookmark. It saves <code>steam-games.json</code>.</li>
+        </ol>
+      </div>
+      <div class="option">
+        <b class="title">Option 2: licenses, with the date you got each game</b>
+        <p>Adds the date you got each game, so the page can sort by newest. It reads each page of your licenses in turn, which takes a few seconds. It has no playtime, and some licenses are bundles or extras rather than games, so only the ones that match a game are used.</p>
+        <ol class="steps">
+          <li>Copy this code:
+            <textarea id="bm-licenses" class="codebox" readonly rows="4" aria-label="Bookmark code, option 2">javascript:(async () =&gt; { const help = &#x27;Open store.steampowered.com/account/licenses/ while signed in to Steam, then click this bookmark again.&#x27;; const pauseMs = 400; const maxPages = 200; function save(fileName, data) { const link = document.createElement(&#x27;a&#x27;); link.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: &#x27;application/json&#x27; })); link.download = fileName; document.body.appendChild(link); link.click(); link.remove(); } function isoDate(text) { const d = new Date(text); if (isNaN(d)) { return text; } const two = n =&gt; String(n).padStart(2, &#x27;0&#x27;); return d.getFullYear() + &#x27;-&#x27; + two(d.getMonth() + 1) + &#x27;-&#x27; + two(d.getDate()); } function licensesOn(page) { const rows = [...page.querySelectorAll(&#x27;table.account_table tr&#x27;)].filter(r =&gt; r.querySelector(&#x27;td.license_date_col&#x27;)); return rows.map(row =&gt; { const cells = row.querySelectorAll(&#x27;td&#x27;); const nameCell = cells[1].cloneNode(true); nameCell.querySelectorAll(&#x27;div&#x27;).forEach(d =&gt; d.remove()); const method = row.querySelector(&#x27;td.license_acquisition_col&#x27;); return { name: nameCell.textContent.replace(/\s+/g, &#x27; &#x27;).trim(), date: isoDate(cells[0].textContent.trim()), method: method ? method.textContent.trim() : &#x27;&#x27; }; }); } let page = document; let licenses = licensesOn(page); if (!licenses.length) { alert(help); return; } const seen = new Set([location.href]); for (let n = 1; n &lt; maxPages; n++) { const next = page.querySelector(&#x27;a.license_paginator_next&#x27;); const url = next &amp;&amp; next.href; if (!url || seen.has(url)) { break; } seen.add(url); await new Promise(done =&gt; setTimeout(done, pauseMs)); const response = await fetch(url, { credentials: &#x27;same-origin&#x27; }); page = new DOMParser().parseFromString(await response.text(), &#x27;text/html&#x27;); const more = licensesOn(page); if (!more.length) { break; } licenses = licenses.concat(more); } save(&#x27;steam-licenses.json&#x27;, { source: &#x27;pocket-library&#x27;, kind: &#x27;licenses&#x27;, saved: new Date().toISOString(), licenses: licenses }); })();</textarea>
+            <div class="btnrow"><button class="btn" type="button" data-copy="bm-licenses">Copy code</button><span class="status" data-copied="bm-licenses"></span></div></li>
+          <li>Add it as a bookmark the same way, named <b>Get my Steam licenses</b>.</li>
+          <li>Open <span class="path">store.steampowered.com/account/licenses/</span> and sign in if asked.</li>
+          <li>Click the bookmark. It saves <code>steam-licenses.json</code>.</li>
+        </ol>
+      </div>
+      <p class="status">Collections are optional: they're in <code>cloud-storage-namespace-1.json</code> in your Steam folder, under <span class="path">userdata\<i>your number</i>\config\cloudstorage</span>.</p>
+    </details>
+
+    <details class="card" id="cmds">
+      <summary>Commands for Claude</summary>
+      <p>Attach the files each command needs. With the Pocket Library skill installed, Claude knows the rest. For updates, include this page's link so Claude updates it instead of making a new one.</p>
+      <ol class="steps">
+        <li><b>First fill.</b> Attach <code>steam-games.json</code> or <code>steam-licenses.json</code> (or both), and optionally <code>cloud-storage-namespace-1.json</code>.
+          <q>Fill my Pocket Library. My device is a [phone or handheld].</q></li>
+        <li><b>New device.</b>
+          <q>I have a new device, a [phone or handheld]. Update my Pocket Library.</q></li>
+        <li><b>New games and playtime.</b> Attach a fresh <code>steam-games.json</code> or <code>steam-licenses.json</code>.
+          <q>Update my Pocket Library games.</q></li>
+        <li><b>Collections.</b> Attach a fresh <code>cloud-storage-namespace-1.json</code>.
+          <q>Update my Pocket Library collections.</q></li>
+        <li><b>The three apps.</b>
+          <q>Check the latest DroidDeck, GameNative, and GameHub Lite releases and update my Pocket Library.</q></li>
+        <li><b>Compatibility.</b>
+          <q>Re-check compatibility for my games and update my Pocket Library.</q></li>
+        <li><b>Everything at once.</b> Attach your files.
+          <q>Refresh everything in my Pocket Library.</q></li>
+      </ol>
+    </details>
+
+    <details class="card" id="guide">
+      <summary>How to play these on Android</summary>
+      <p id="deviceNote">These free apps run your PC games on an Android phone or handheld itself, with no streaming from a PC. They use compatibility layers that let the Windows version of a game run there: DroidDeck runs Valve's own Steam client and Proton inside a small Linux system, much like a Steam Deck; GameNative uses Proton or Wine; GameHub Lite uses Wine. They work best on a recent Snapdragon chip (Snapdragon 8 Gen 2 or newer, as in many flagship phones, the AYN Odin 2, and the AYN Thor).</p>
+      <h2>The three apps</h2>
+      <div class="apps" id="apps"></div>
+      <h2>Tips</h2>
+      <ul class="tips">
+        <li>Render 3D games at 720p and turn on FSR upscaling. It looks sharp on a small screen and runs much faster.</li>
+        <li>If a game won't start in one app, try it in another. Each one handles games differently.</li>
+        <li>Phones have no fan. Cap heavy games at 30 or 40 FPS for long sessions. Handhelds with a fan can push harder.</li>
+        <li>For Touch games, turn on direct touch so a tap clicks where your finger is: Direct touch in DroidDeck, touchscreen mode in GameNative.</li>
+        <li>Games whose anti-cheat blocks Linux won't run in any of these apps. Use a PC or cloud gaming for those.</li>
+      </ul>
+    </details>
+
+    <details class="card legend" id="legend">
+      <summary>What this page shows</summary>
+      <h2>Weight: how demanding the game is</h2>
+      <ul>
+        <li><b>Light</b>: 2D, indie, older, or light 3D games. Should run well.</li>
+        <li><b>Medium</b>: older or mid-weight 3D. Use 720p with FSR.</li>
+        <li><b>Heavy</b>: modern or demanding 3D. Playable with compromises at 720p with FSR.</li>
+        <li><b>Android app</b>: there's a native Android version, which beats running the PC one.</li>
+        <li><b>Not on Android</b>: blocked by anti-cheat, VR only, servers shut down, or far too demanding.</li>
+        <li><b>Unknown</b>: no data yet.</li>
+      </ul>
+      <h2>Reports: what players found</h2>
+      <ul>
+        <li><b>ProtonDB</b>: whether the game runs on Linux PCs, from ProtonDB reports. The Android apps build on the same tools, so a game that fails there usually fails here too.</li>
+        <li><b>GameNative</b>: what GameNative players on Snapdragon devices reported, for games with 20 or more ratings.</li>
+        <li><b>Anti-cheat</b>: whether the game's anti-cheat allows Linux, from AreWeAntiCheatYet.</li>
+        <li>DroidDeck and GameHub Lite don't publish compatibility data yet, so there are no reports for them.</li>
+      </ul>
+      <h2>The rest</h2>
+      <ul>
+        <li><b>Touch / Touch OK / Controller</b>: how well it plays without a gamepad. A note, not a rule.</li>
+        <li><b>Heads-up</b>: an extra hurdle, like a publisher launcher (EA, Ubisoft, Rockstar).</li>
+        <li><b>Based on</b>: the data behind the entry: Steam's minimum requirements, ProtonDB, GameNative, the anti-cheat list, or a check by hand. "Estimate only" means there was no data.</li>
+      </ul>
+      <p class="status">Best effort at the time of publishing. Nothing here is a test result, and some entries will be wrong.</p>
+    </details>
+
+    <div id="out"></div>
+    <footer id="foot">Pocket Library by <a href="https://github.com/notadevperse/pocket-library" target="_blank" rel="noopener">notadevperse</a>. Best effort; entries may be wrong. Not affiliated with Valve, Steam, or any of the apps listed. Data from <a href="https://www.protondb.com" target="_blank" rel="noopener">ProtonDB</a> (ODbL), <a href="https://github.com/GameNative/gamenative-compat" target="_blank" rel="noopener">GameNative</a>, <a href="https://pcgamebenchmarks.com" target="_blank" rel="noopener">PCGameBenchmarks</a> (CC BY 4.0), and <a href="https://areweanticheatyet.com" target="_blank" rel="noopener">AreWeAntiCheatYet</a> (MIT). Thank you to everyone who contributes to them.<span id="foot-web"></span></footer>
+  </div>
+</main>
+
+<script id="pl-data" type="application/json">{"format":2,"device":"","chip":"","gpu":"","gpuClass":"","updated":"","sources":{},"apps":[{"name":"DroidDeck","repo":"Droid-Deck/DroidDeck","about":"Real Steam in Steam Deck mode. Download the plain .apk.","version":"","date":"","note":""},{"name":"GameNative","repo":"utkarshdalal/GameNative","about":"Uses settings other players found for each game.","version":"","date":"","note":""},{"name":"GameHub Lite","repo":"Producdevity/gamehub-lite","about":"A privacy-cleaned build of GameHub. Get the plain .apk, not the antutu/ludashi/pubg versions.","version":"","date":"","note":""}],"collections":[],"games":[]}</script>
+<script>
+(function () {
+  'use strict';
+
+  // The page as it arrived, before anything is drawn. The web version uses it for "Save a copy".
+  const PRISTINE = '<!doctype html>\n' + document.documentElement.outerHTML;
+  const $ = id => document.getElementById(id);
+  const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ESCAPES[c]);
+  const BASE = JSON.parse($('pl-data').textContent);
+  let DATA = BASE;
+
+  // ---- settings -----------------------------------------------------------------
+
+  // Groups shown as filter chips, in display order.
+  const GROUPS = [
+    ['light', 'Light'], ['medium', 'Medium'], ['heavy', 'Heavy'], ['android', 'Android app'],
+    ['unknown', 'Unknown'], ['no', 'Not on Android'], ['other', 'Not games'],
+  ];
+  const GROUP_LABEL = Object.fromEntries(GROUPS);
+  const GROUP_ORDER = Object.fromEntries(GROUPS.map(([key], i) => [key, i]));
+  const DEFAULT_GROUPS = ['light', 'medium', 'heavy', 'android'];
+  const PAGE_SIZE = 150;
+  const VIEW_KEY = 'pl-view-2';
+  const LIBRARY_KEY = 'pl-library-1';
+
+  // What each GPU class means for the person's device.
+  const DEVICE_CLASSES = {
+    full: {
+      label: 'Fully supported',
+      title: 'Recent Snapdragon',
+      examples: 'Snapdragon 8 Gen 1 or newer: recent flagship phones, AYN Odin 2, AYN Thor',
+      text: 'All three apps support this GPU.',
+      lowerByOne: false,
+      app: { light: 'DroidDeck – GameNative', medium: 'DroidDeck – GameNative', heavy: 'Any app · 720p + FSR' },
+    },
+    limited: {
+      label: 'Partly supported',
+      title: 'Older Snapdragon',
+      examples: 'Older or mid-range Snapdragon: Retroid Pocket 5 and Mini, many mid-range phones',
+      text: 'DroidDeck may not run or is experimental on this GPU; GameNative and GameHub Lite work. Medium and Heavy games are shown one step heavier.',
+      lowerByOne: true,
+      app: { light: 'GameNative – GameHub Lite', medium: 'GameNative – GameHub Lite', heavy: 'Any app · 720p + FSR' },
+    },
+    other: {
+      label: 'Limited support',
+      title: 'Not Snapdragon',
+      examples: 'MediaTek, Exynos, Tensor, or Unisoc: Pixel phones, most Anbernic handhelds',
+      text: "DroidDeck doesn't support this GPU. GameNative and GameHub Lite can run many games, but drivers are weaker than on Snapdragon. Medium and Heavy games are shown one step heavier.",
+      lowerByOne: true,
+      app: { light: 'GameNative – GameHub Lite', medium: 'GameNative – GameHub Lite', heavy: 'Any app · 720p + FSR' },
+    },
+  };
+  const ONE_STEP_HEAVIER = { medium: 'heavy', heavy: 'no' };
+  const APP_FOR_STATUS = { android: 'Google Play version', no: 'PC or cloud' };
+  const TOUCH_LABEL = { t: 'Touch', o: 'Touch OK', c: 'Controller' };
+  const REPORTS = {
+    linux: { label: 'ProtonDB', works: ['runs', 'ok'], mixed: ['mixed', 'mid'], fails: ['fails', 'bad'] },
+    gamenative: { label: 'GameNative', works: ['works', 'ok'], mixed: ['mixed', 'mid'], 'first-run': ['first launch often fails', 'mid'], broken: ['often broken', 'bad'] },
+    anticheat: { label: 'Anti-cheat', works: ['allows Linux', 'ok'], blocked: ['blocks Linux', 'bad'] },
+  };
+  const BASIS_LABEL = { s: 'Steam requirements', p: 'ProtonDB', g: 'GameNative', a: 'anti-cheat list', h: 'checked by hand' };
+  const COLLECTION_ORDER = ['Unplayed', 'Next Up', 'Beat', 'Not Interested', 'Played', 'Favorites', 'Co-op'];
+
+  // ---- matching: begin ------------------------------------------------------------
+  // Reads the Steam files in the browser and rates the games against ratings.json.
+  // The same rules as scripts/build.py. Kept free of page code so the tests can run it.
+
+  const FIELDS = ['name', 'weight', 'status', 'touch', 'note', 'heads', 'basis', 'linux', 'gamenative', 'anticheat'];
+
+  function blankEntry(name) {
+    return { name: name || '', weight: 'unknown', status: '', touch: 'c', note: '', heads: '', basis: '', linux: '', gamenative: '', anticheat: '' };
+  }
+
+  function simpleName(name) {
+    return String(name || '').toLowerCase().replace(/[™®]/g, '').replace(/[^a-z0-9]/g, '');
+  }
+
+  // What a Steam file holds: 'games', 'licenses', 'collections', or '' for anything else.
+  function fileKind(raw) {
+    if (Array.isArray(raw)) {
+      return raw.some(row => Array.isArray(row) && String(row[0]).startsWith('user-collections.')) ? 'collections' : '';
+    }
+    if (!raw || typeof raw !== 'object') return '';
+    if (raw.kind === 'licenses' || Array.isArray(raw.licenses)) return 'licenses';
+    if (raw.kind === 'games' || Array.isArray(raw.games) || (raw.response && Array.isArray(raw.response.games))) return 'games';
+    return '';
+  }
+
+  function gamesFrom(raw) {
+    const rows = Array.isArray(raw.games) ? raw.games : raw.response.games;
+    return rows.filter(row => row && row.appid != null).map(row => ({
+      appid: String(row.appid),
+      name: String(row.name || ''),
+      minutes: Number(row.minutes != null ? row.minutes : row.playtime_forever) || 0,
+    }));
+  }
+
+  function licensesFrom(raw) {
+    return raw.licenses.filter(lic => lic && lic.name).map(lic => ({ name: String(lic.name), date: String(lic.date || '') }));
+  }
+
+  // Steam's cloud-storage-namespace-1.json: {collection name: [app IDs]}.
+  function collectionsFrom(raw) {
+    const out = {};
+    raw.forEach(row => {
+      const [key, value] = Array.isArray(row) ? row : [];
+      if (!String(key).startsWith('user-collections.') || !value || value.is_deleted || !value.value) return;
+      let collection;
+      try { collection = JSON.parse(value.value); } catch (err) { return; }
+      if (!collection || !Array.isArray(collection.added) || !collection.added.length) return;
+      out[collection.name] = (out[collection.name] || []).concat(collection.added.map(String));
+    });
+    return out;
+  }
+
+  // library: {games, licenses, collections}, any of them null. ratings: ratings.json's "games".
+  // Returns {games, collections, unmatched} with games in the page's format.
+  function rateLibrary(library, ratings) {
+    const base = ratings || {};
+    let rows = null;
+    const unmatched = [];
+    if (library.games) {
+      const seen = new Set();
+      rows = [];
+      library.games.forEach(g => {
+        if (seen.has(g.appid)) return;
+        seen.add(g.appid);
+        rows.push({ appid: g.appid, name: g.name, hours: Math.round(g.minutes / 60), added: '' });
+      });
+    }
+    if (library.licenses) {
+      if (rows) {
+        const byName = {};
+        rows.forEach(row => { const key = simpleName(row.name); if (!(key in byName)) byName[key] = row; });
+        library.licenses.forEach(lic => {
+          const row = byName[simpleName(lic.name)];
+          if (!row) unmatched.push(lic.name);
+          else if (!row.added || lic.date < row.added) row.added = lic.date;
+        });
+      } else {
+        const known = {};
+        Object.keys(base).forEach(app => { const key = simpleName(base[app].name); if (!(key in known)) known[key] = app; });
+        const made = {};
+        library.licenses.forEach(lic => {
+          const app = known[simpleName(lic.name)];
+          if (!app) unmatched.push(lic.name);
+          else if (!made[app] || lic.date < made[app].added) made[app] = { appid: app, name: '', hours: 0, added: lic.date };
+        });
+        rows = Object.values(made);
+      }
+    }
+    const byApp = {};
+    const collections = Object.keys(library.collections || {});
+    collections.forEach(name => library.collections[name].forEach(app => { (byApp[app] = byApp[app] || []).push(name); }));
+    const games = (rows || []).map(row => {
+      const entry = blankEntry();
+      const rated = base[row.appid];
+      if (rated) FIELDS.forEach(k => { if (rated[k] != null) entry[k] = rated[k]; });
+      const name = row.name || entry.name || 'App ' + row.appid;
+      return Object.assign({ appid: row.appid, hours: row.hours, added: row.added,
+        collections: [...new Set(byApp[row.appid] || [])].sort() }, entry, { name });
+    });
+    return { games, collections, unmatched };
+  }
+  // ---- matching: end --------------------------------------------------------------
+
+  let device = DEVICE_CLASSES.full;
+  let deviceName = '';
+  let items = [];
+  let counts = {};
+  let presentGroups = [];
+  let hasDates = false;
+  let collectionNames = [];
+
+  // ---- always-on parts of the page ---------------------------------------------
+
+  function renderApps() {
+    $('apps').innerHTML = (DATA.apps || []).map(app => {
+      const version = app.version
+        ? `<span class="ver">Latest: ${esc(app.version)}${app.date ? ' · ' + esc(app.date) : ''}</span>`
+        : '<span class="ver">Version not checked yet</span>';
+      return `<div class="app-card"><b>${esc(app.name)}</b><span>${esc(app.about)}</span>${version}`
+        + `${app.note ? `<span>${esc(app.note)}</span>` : ''}`
+        + `<a href="https://github.com/${esc(app.repo)}/releases" target="_blank" rel="noopener">github.com/${esc(app.repo)}/releases</a></div>`;
+    }).join('');
+  }
+
+  function setUpCopyButtons() {
+    document.querySelectorAll('[data-copy]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const box = $(button.dataset.copy);
+        const status = document.querySelector(`[data-copied="${button.dataset.copy}"]`);
+        try {
+          await navigator.clipboard.writeText(box.value);
+          status.textContent = 'Copied.';
+        } catch (err) {
+          box.focus();
+          box.select();
+          status.textContent = 'Selected. Press Ctrl+C to copy.';
+        }
+      });
+    });
+  }
+
+  function renderDevice() {
+    const card = $('device');
+    if (!deviceName && !DATA.gpuClass) { card.hidden = true; return; }
+    const spec = [DATA.chip, DATA.gpu].filter(Boolean).join(' · ');
+    const label = deviceName || device.title;
+    $('deviceNote').textContent = `Entries on this page are for a ${label}${spec ? ' (' + spec + ')' : ''}. `
+      + 'These free apps run PC games on it without streaming from a PC. They use compatibility layers that let the Windows version of a game run there: '
+      + 'DroidDeck runs Valve\'s own Steam client and Proton inside a small Linux system, much like a Steam Deck; GameNative uses Proton or Wine; GameHub Lite uses Wine.';
+    card.hidden = false;
+    card.className = 'card device dev-' + (DEVICE_CLASSES[DATA.gpuClass] ? DATA.gpuClass : 'full');
+    card.innerHTML = `<div class="dev-row"><b>${esc(label)}</b><span class="pill">${device.label}</span></div>`
+      + `${spec ? `<div class="status">${esc(spec)}</div>` : ''}<p>${device.text}</p>`;
+  }
+
+  // ---- the games ---------------------------------------------------------------
+
+  function toItem(game) {
+    const weight = GROUP_LABEL[game.weight] ? game.weight : 'unknown';
+    let group = game.status && GROUP_LABEL[game.status] ? game.status : weight;
+    let heavierForDevice = false;
+    if (device.lowerByOne && ONE_STEP_HEAVIER[group]) {
+      group = ONE_STEP_HEAVIER[group];
+      heavierForDevice = true;
+    }
+    const collections = Array.isArray(game.collections) ? game.collections : [];
+    const reports = Object.keys(REPORTS).filter(k => REPORTS[k][game[k]]).map(k => [k, game[k]]);
+    return {
+      appid: game.appid,
+      name: String(game.name || 'App ' + game.appid),
+      hours: Number(game.hours) || 0,
+      added: game.added || '',
+      group,
+      heavierForDevice,
+      touch: group === 'other' ? '' : (TOUCH_LABEL[game.touch] ? game.touch : ''),
+      note: game.note || '',
+      heads: game.heads || '',
+      basis: String(game.basis || ''),
+      reports,
+      problem: reports.some(([k, v]) => REPORTS[k][v][1] === 'bad'),
+      collections,
+      searchText: (game.name + ' ' + collections.join(' ')).toLowerCase(),
+    };
+  }
+
+  const collectionRank = name => {
+    const i = COLLECTION_ORDER.findIndex(w => name.toLowerCase().includes(w.toLowerCase()));
+    return i < 0 ? 99 : i;
+  };
+
+  // Take a page's data (filled by Claude, or by the web version) and get it ready to draw.
+  function useData(data) {
+    DATA = data;
+    device = DEVICE_CLASSES[DATA.gpuClass] || DEVICE_CLASSES.full;
+    deviceName = DATA.device || DATA.phone || '';  // "phone" in pages made before format 2
+    items = (Array.isArray(DATA.games) ? DATA.games : []).map(toItem);
+    counts = {};
+    items.forEach(x => { counts[x.group] = (counts[x.group] || 0) + 1; });
+    presentGroups = GROUPS.map(([key]) => key).filter(key => counts[key]);
+    hasDates = items.some(x => x.added);
+    collectionNames = [...new Set(items.flatMap(x => x.collections))]
+      .sort((a, b) => collectionRank(a) - collectionRank(b) || a.localeCompare(b));
+    if (![...state.groups].some(k => counts[k])) state.groups = new Set(presentGroups.filter(k => k !== 'other' && k !== 'no'));
+    if (state.collection !== 'all' && state.collection !== '__none' && !collectionNames.includes(state.collection)) state.collection = 'all';
+    if (state.sort === 'new' && !hasDates) state.sort = 'weight';
+    state.limit = PAGE_SIZE;
+  }
+
+  // ---- view state, remembered per browser ----------------------------------------
+
+  const state = { groups: new Set(DEFAULT_GROUPS), sort: 'weight', input: 'all', reports: 'all', collection: 'all', query: '', limit: PAGE_SIZE };
+  try {
+    const saved = JSON.parse(localStorage.getItem(VIEW_KEY) || 'null');
+    if (saved) Object.assign(state, saved, { groups: new Set(saved.groups) });
+  } catch (err) { /* storage can be unavailable; defaults are fine */ }
+
+  function saveView() {
+    try {
+      const { groups, sort, input, reports, collection } = state;
+      localStorage.setItem(VIEW_KEY, JSON.stringify({ groups: [...groups], sort, input, reports, collection }));
+    } catch (err) { /* not saved; nothing breaks */ }
+  }
+
+  // ---- the deck --------------------------------------------------------------------
+
+  function newestDataDate() {
+    const dates = Object.values(DATA.sources || {}).filter(Boolean).sort();
+    const latest = dates[dates.length - 1] || DATA.updated;
+    if (!latest || !/^\d{4}-\d{2}-\d{2}/.test(latest)) return latest || '';
+    const [y, m] = latest.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
+  }
+
+  function renderDeck() {
+    $('deck').hidden = false;
+    $('intro').hidden = true;
+    $('sort-new').hidden = !hasDates;
+    const asOf = newestDataDate();
+    $('sub').textContent = (DATA.example ? 'Example · ' : '') + `${items.length.toLocaleString()} games`
+      + (asOf ? ` · best effort, data as of ${asOf}` : '');
+    const listed = items.filter(x => x.group !== 'other').length || 1;
+    $('meter').innerHTML = ['light', 'medium', 'heavy', 'android', 'unknown', 'no']
+      .map(k => `<span class="t-${k}" style="width:${(counts[k] || 0) / listed * 100}%"></span>`).join('');
+    $('chips').innerHTML = `<button type="button" class="chip" id="chip-all" data-all="1">All <span class="n">${items.length}</span></button>`
+      + GROUPS.filter(([k]) => counts[k])
+        .map(([k, label]) => `<button type="button" class="chip t-${k}" data-group="${k}"><span class="dot"></span>${label} <span class="n">${counts[k]}</span></button>`).join('');
+    const collectionCount = name => name === '__none'
+      ? items.filter(x => !x.collections.length).length
+      : items.filter(x => x.collections.includes(name)).length;
+    $('colls').hidden = !collectionNames.length;
+    $('colls').innerHTML = collectionNames.length
+      ? '<button type="button" class="chip" data-coll="all">All collections</button>'
+        + collectionNames.map(n => `<button type="button" class="chip" data-coll="${esc(n)}">${esc(n)} <span class="n">${collectionCount(n)}</span></button>`).join('')
+        + `<button type="button" class="chip" data-coll="__none">No collection <span class="n">${collectionCount('__none')}</span></button>`
+      : '';
+  }
+
+  // ---- the list ------------------------------------------------------------------------
+
+  function formatDate(iso) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+    if (!m) return iso;
+    return new Date(+m[1], m[2] - 1, +m[3]).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function gameLink(x) {
+    return Number(x.appid)
+      ? `<a href="https://store.steampowered.com/app/${Number(x.appid)}/" target="_blank" rel="noopener noreferrer" title="Open on Steam">${esc(x.name)}</a>`
+      : esc(x.name);
+  }
+
+  function rowHtml(x) {
+    const app = APP_FOR_STATUS[x.group] || device.app[x.group] || '';
+    const meta = [
+      `<span class="pill">${GROUP_LABEL[x.group]}</span>`,
+      x.touch ? `<span class="input i-${x.touch}">${TOUCH_LABEL[x.touch]}</span>` : '',
+      app ? `<span class="app">${app}</span>` : '',
+      x.hours ? `<span class="hours">${x.hours} h played</span>` : '',
+      x.added && state.sort === 'new' ? `<span class="added">Added ${esc(formatDate(x.added))}</span>` : '',
+    ].join('');
+    const reports = x.reports.map(([k, v]) => {
+      const [text, tone] = REPORTS[k][v];
+      return `<span class="rep ${tone}">${REPORTS[k].label}: ${text}</span>`;
+    }).join('');
+    const basis = x.group === 'other' ? ''
+      : `<div class="basis">Based on: ${x.basis ? x.basis.split('').map(c => BASIS_LABEL[c]).filter(Boolean).join(' · ') : 'estimate only'}</div>`;
+    return `<li class="g t-${x.group}"><span class="stripe"></span><div class="body">`
+      + `<div class="name">${gameLink(x)}</div>`
+      + `<div class="meta">${meta}</div>`
+      + (reports ? `<div class="reports">${reports}</div>` : '')
+      + (x.collections.length ? `<div class="tags">${x.collections.map(c => `<span class="tag">${esc(c)}</span>`).join('')}</div>` : '')
+      + (x.heavierForDevice ? '<div class="note">Shown one step heavier for this device.</div>' : '')
+      + (x.note ? `<div class="note">${esc(x.note)}</div>` : '')
+      + (x.heads ? `<div class="heads">${esc(x.heads)}</div>` : '')
+      + basis
+      + '</div></li>';
+  }
+
+  function visibleItems() {
+    const q = state.query.trim().toLowerCase();
+    if (q) return items.filter(x => x.searchText.includes(q));
+    const inputOk = x => state.input === 'all' || (state.input === 'touch' ? x.touch === 't' : x.touch === 't' || x.touch === 'o');
+    const reportsOk = x => state.reports === 'all' || !x.problem;
+    const collectionOk = x => state.collection === 'all'
+      || (state.collection === '__none' ? !x.collections.length : x.collections.includes(state.collection));
+    return items.filter(x => state.groups.has(x.group) && inputOk(x) && reportsOk(x) && collectionOk(x));
+  }
+
+  const SORTS = {
+    weight: (a, b) => GROUP_ORDER[a.group] - GROUP_ORDER[b.group] || b.hours - a.hours || a.name.localeCompare(b.name),
+    az: (a, b) => a.name.localeCompare(b.name),
+    hours: (a, b) => b.hours - a.hours || a.name.localeCompare(b.name),
+    new: (a, b) => (b.added || '').localeCompare(a.added || '') || a.name.localeCompare(b.name),
+  };
+
+  // The badge names what's hiding games: sorting hides nothing, so it isn't counted.
+  function renderFilterButton() {
+    const on = [];
+    if (state.collection !== 'all') on.push(state.collection === '__none' ? 'No collection' : state.collection);
+    if (state.input !== 'all') on.push(state.input === 'touch' ? 'Touch' : 'Touch + OK');
+    if (state.reports !== 'all') on.push('No problems');
+    const badge = on.length === 1 ? esc(on[0]) : on.length + ' on';
+    $('fbtn').innerHTML = 'Filters' + (on.length ? `<span class="on">${badge}</span>` : '');
+  }
+
+  function render() {
+    renderFilterButton();
+    $('chips').querySelectorAll('[data-group]').forEach(b => b.setAttribute('aria-pressed', state.groups.has(b.dataset.group)));
+    $('chip-all').setAttribute('aria-pressed', presentGroups.every(k => state.groups.has(k)));
+    document.querySelectorAll('[data-sort]').forEach(b => b.setAttribute('aria-pressed', b.dataset.sort === state.sort));
+    document.querySelectorAll('[data-input]').forEach(b => b.setAttribute('aria-pressed', b.dataset.input === state.input));
+    document.querySelectorAll('[data-reports]').forEach(b => b.setAttribute('aria-pressed', b.dataset.reports === state.reports));
+    $('colls').querySelectorAll('[data-coll]').forEach(b => b.setAttribute('aria-pressed', b.dataset.coll === state.collection));
+
+    const list = visibleItems().sort(SORTS[state.sort]);
+    const searching = Boolean(state.query.trim());
+    $('count').textContent = searching ? `${list.length} match${list.length === 1 ? '' : 'es'} in all games` : `${list.length} shown`;
+    const out = $('out');
+    if (!list.length) {
+      out.innerHTML = `<div class="empty">${searching ? 'No games match that search.' : 'Pick a weight above to see games.'}</div>`;
+      return;
+    }
+
+    const shown = list.slice(0, state.limit);
+    let html = '';
+    if (state.sort === 'weight') {
+      const groupCounts = {};
+      list.forEach(x => { groupCounts[x.group] = (groupCounts[x.group] || 0) + 1; });
+      let current = null;
+      let rows = [];
+      const flush = () => {
+        if (current) html += `<div class="group-h t-${current}">${GROUP_LABEL[current]}<span class="n">${groupCounts[current]}</span></div><ul class="list">${rows.join('')}</ul>`;
+      };
+      shown.forEach(x => {
+        if (x.group !== current) { flush(); current = x.group; rows = []; }
+        rows.push(rowHtml(x));
+      });
+      flush();
+    } else {
+      html = `<ul class="list">${shown.map(rowHtml).join('')}</ul>`;
+    }
+    const left = list.length - state.limit;
+    if (left > 0) html += `<button type="button" class="more" id="more">Show ${Math.min(PAGE_SIZE, left)} more of ${left} left</button>`;
+    out.innerHTML = html;
+    const more = $('more');
+    if (more) more.onclick = () => { state.limit += PAGE_SIZE; render(); };
+  }
+
+  // Draw everything for the current data. With no games, the deck and list stay hidden.
+  function show() {
+    renderApps();
+    renderDevice();
+    if (!items.length) {
+      $('deck').hidden = true;
+      $('out').innerHTML = '';
+      return;
+    }
+    renderDeck();
+    render();
+  }
+
+  // ---- controls ------------------------------------------------------------------------
+
+  function changed() {
+    state.limit = PAGE_SIZE;
+    saveView();
+    render();
+  }
+
+  $('chips').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.all) {
+      state.groups = presentGroups.every(k => state.groups.has(k)) ? new Set(['light']) : new Set(presentGroups);
+    } else if (state.groups.has(b.dataset.group)) {
+      state.groups.delete(b.dataset.group);
+    } else {
+      state.groups.add(b.dataset.group);
+    }
+    changed();
+  });
+  $('colls').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (b) { state.collection = b.dataset.coll; changed(); }
+  });
+  document.querySelectorAll('[data-sort]').forEach(b => { b.onclick = () => { state.sort = b.dataset.sort; changed(); }; });
+  document.querySelectorAll('[data-input]').forEach(b => { b.onclick = () => { state.input = b.dataset.input; changed(); }; });
+  document.querySelectorAll('[data-reports]').forEach(b => { b.onclick = () => { state.reports = b.dataset.reports; changed(); }; });
+
+  $('fbtn').addEventListener('click', () => {
+    const open = $('deck').classList.toggle('open');
+    $('fbtn').setAttribute('aria-expanded', open);
+  });
+
+  const search = $('q');
+  const clear = $('clear');
+  search.addEventListener('input', () => {
+    state.query = search.value;
+    clear.hidden = !search.value;
+    state.limit = PAGE_SIZE;
+    render();
+  });
+  clear.onclick = () => {
+    search.value = '';
+    state.query = '';
+    clear.hidden = true;
+    render();
+    search.focus();
+  };
+
+  setUpCopyButtons();
+
+  // ---- the web version ------------------------------------------------------------------
+  // Only on the published site (data has "web": true). Claude-filled pages and saved
+  // copies skip all of this and show their own games.
+
+  if (!BASE.web) {
+    useData(BASE);
+    show();
+    if (!items.length) $('cmds').open = true;
+    if (BASE.saved && BASE.home) {
+      $('foot-web').innerHTML = ` Saved copy. For the newest data, open <a href="${esc(BASE.home)}" target="_blank" rel="noopener">${esc(BASE.home.replace(/^https?:\/\//, ''))}</a> again.`;
+    }
+    return;
+  }
+
+  let ratings = null;      // ratings.json, loaded once
+  let library = null;      // {games, licenses, collections, files, example}
+  let rated = null;        // rateLibrary's result for the current library
+  let chosen = { name: '', gpuClass: '' };
+
+  $('intro').hidden = true;
+  $('cmds').hidden = true;  // Claude's commands only make sense on Claude pages and saved copies
+  $('foot-web').textContent = ' Your files are read on your device and never uploaded.';
+
+  function loadStored() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(LIBRARY_KEY) || 'null');
+      if (stored && stored.version === 1) {
+        library = stored.library;
+        chosen = Object.assign(chosen, stored.device);
+      }
+    } catch (err) { /* nothing stored, or storage blocked */ }
+  }
+
+  function store() {
+    try {
+      if (library && !library.example) localStorage.setItem(LIBRARY_KEY, JSON.stringify({ version: 1, library, device: chosen }));
+      else localStorage.setItem(LIBRARY_KEY, JSON.stringify({ version: 1, library: null, device: chosen }));
+    } catch (err) { /* not remembered; the page still works until it's closed */ }
+  }
+
+  function setStatus(text) {
+    document.querySelectorAll('[data-web-status]').forEach(el => { el.textContent = text; });
+  }
+
+  async function getJson(url) {
+    const response = await fetch(url, { cache: 'no-cache' });
+    if (!response.ok) throw new Error(url + ': ' + response.status);
+    return response.json();
+  }
+
+  async function getRatings() {
+    if (!ratings) ratings = await getJson(BASE.ratingsUrl);
+    return ratings;
+  }
+
+  function deviceFieldsHtml(where) {
+    const choices = Object.entries(DEVICE_CLASSES).map(([key, d]) =>
+      `<label class="choice"><input type="radio" name="devclass-${where}" value="${key}" data-dev-class${chosen.gpuClass === key ? ' checked' : ''}>`
+      + `<b>${esc(d.title)}</b><span>${esc(d.examples)}</span></label>`).join('');
+    return `<div class="choices" role="radiogroup" aria-label="Chip or device type">${choices}</div>`
+      + `<span class="status">Not sure? On a phone it's in Settings → About phone; search its name with "chipset".</span>`
+      + `<label class="field">Its name (optional)<input data-dev-name type="text" maxlength="60" autocomplete="off" placeholder="Like Galaxy S24 or AYN Odin 2" value="${esc(chosen.name)}"></label>`;
+  }
+
+  function renderDeviceFields() {
+    document.querySelectorAll('#web-intro [data-device-fields]').forEach(el => { el.innerHTML = deviceFieldsHtml('intro'); });
+  }
+
+  function renderMine() {
+    const box = $('mine');
+    $('device').hidden = true;  // the web version shows the device inside "Your library"
+    if (!library) { box.hidden = true; box.innerHTML = ''; return; }
+    const n = rated.games.length;
+    const d = DEVICE_CLASSES[chosen.gpuClass];
+    const devLabel = d ? `${esc(chosen.name || d.title)} · ${d.label}` : 'device not set';
+    const notice = library.example
+      ? '<div class="notice"><b>Example library.</b> About 100 well-known games with made-up playtime, dates, and collections, to show how the page works. These aren\'t anyone\'s real games.'
+        + '<div class="btnrow" style="margin-top:8px"><button class="btn primary" type="button" data-open-files>Use my own games</button><button class="btn" type="button" data-forget>Back</button></div></div>'
+      : '';
+    const about = library.example ? ''
+      : `<p>${n.toLocaleString()} games from ${esc(library.files.join(', '))}. Read on this device only, and remembered in this browser until you forget them.`
+        + (rated.unmatched.length ? ` ${rated.unmatched.length.toLocaleString()} license${rated.unmatched.length === 1 ? '' : 's'} matched no game (bundles, extras, or games not in the list) and ${rated.unmatched.length === 1 ? 'was' : 'were'} left out.` : '')
+        + '</p>';
+    const actions = library.example ? ''
+      : '<div class="btnrow"><button class="btn" type="button" data-open-files>Add or replace files</button><button class="btn" type="button" data-save>Save a copy of this page</button><button class="btn" type="button" data-forget>Forget my library</button></div>';
+    const title = library.example ? 'Device' : `Your library · ${n.toLocaleString()} games`;
+    box.hidden = false;
+    box.innerHTML = notice
+      + `<details class="card"${d || library.example ? '' : ' open'}><summary>${title} <span class="sumdev">· ${devLabel}</span></summary>`
+      + about + (d ? `<p>${esc(d.text)}</p>` : '')
+      + `<div class="fields">${deviceFieldsHtml('mine')}</div>${actions}`
+      + '<span class="status" data-web-status role="status"></span></details>';
+  }
+
+  // Rate the library against the newest ratings.json and draw the page.
+  async function rebuild() {
+    if (!library) {
+      $('web-intro').hidden = false;
+      $('getlist').open = true;
+      $('mine').hidden = true;
+      useData(Object.assign({}, BASE, { games: [] }));
+      show();
+      renderDeviceFields();
+      return;
+    }
+    let data;
+    try {
+      data = await getRatings();
+    } catch (err) {
+      setStatus("Couldn't load the game list (ratings.json). Check your connection and reload. If you opened a saved file, open the website instead.");
+      return;
+    }
+    rated = rateLibrary(library, data.games || {});
+    const filled = Object.assign({}, BASE, {
+      device: chosen.name, gpuClass: chosen.gpuClass || 'full', chip: '', gpu: '',
+      updated: data.updated || '', sources: data.sources || {},
+      collections: rated.collections, games: rated.games, example: Boolean(library.example),
+    });
+    $('web-intro').hidden = true;
+    $('getlist').open = false;
+    useData(filled);
+    if (!chosen.gpuClass) DATA.gpuClass = '';
+    show();
+    renderMine();
+    if (!chosen.gpuClass && !library.example) setStatus('Pick your device type below. Until then, games are shown for a recent Snapdragon.');
+  }
+
+  async function readFiles(files) {
+    const found = { games: null, licenses: null, collections: null };
+    const names = { games: '', licenses: '', collections: '' };
+    const problems = [];
+    for (const file of files) {
+      let raw;
+      try {
+        raw = JSON.parse(await file.text());
+      } catch (err) {
+        problems.push(`${file.name} isn't a JSON file`);
+        continue;
+      }
+      const kind = fileKind(raw);
+      if (kind === 'games') found.games = gamesFrom(raw);
+      else if (kind === 'licenses') found.licenses = licensesFrom(raw);
+      else if (kind === 'collections') found.collections = collectionsFrom(raw);
+      else { problems.push(`${file.name} isn't a Steam games, licenses, or collections file`); continue; }
+      names[kind] = file.name;
+    }
+    if (!found.games && !found.licenses && !found.collections) {
+      setStatus(problems.length ? `Nothing read: ${problems.join('; ')}.` : 'No files chosen.');
+      return;
+    }
+    const keep = library && !library.example ? library : { games: null, licenses: null, collections: null, fileNames: {} };
+    const fileNames = Object.assign({}, keep.fileNames || {});
+    Object.keys(found).forEach(k => { if (found[k]) { keep[k] = found[k]; fileNames[k] = names[k]; } });
+    if (!keep.games && !keep.licenses) {
+      setStatus(`Read ${names.collections}. Now open steam-games.json or steam-licenses.json too: collections alone have no games.`);
+      return;
+    }
+    library = { games: keep.games, licenses: keep.licenses, collections: keep.collections, fileNames,
+      files: Object.values(fileNames).filter(Boolean), example: false };
+    store();
+    await rebuild();
+    if (problems.length) setStatus(`Skipped: ${problems.join('; ')}.`);
+    window.scrollTo({ top: 0 });
+  }
+
+  async function loadExample(button) {
+    if (button) button.disabled = true;
+    try {
+      const example = await getJson(BASE.exampleUrl);
+      library = { games: gamesFrom(example), licenses: licensesFrom(example), collections: example.collections, files: [], example: true };
+      await rebuild();
+      window.scrollTo({ top: 0 });
+    } catch (err) {
+      setStatus("Couldn't load the example. Check your connection and try again.");
+    }
+    if (button) button.disabled = false;
+  }
+
+  function saveCopy() {
+    const data = Object.assign({}, DATA, { web: false, saved: true, example: false, gpuClass: chosen.gpuClass || 'full' });
+    delete data.ratingsUrl;
+    delete data.exampleUrl;
+    const blob = JSON.stringify(data).replace(/<\//g, '<\\/');
+    const html = PRISTINE.replace(/(<script id="pl-data" type="application\/json">)[\s\S]*?(<\/script>)/, (m, open, close) => open + blob + close);
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    link.download = 'pocket-library.html';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setStatus('Saved pocket-library.html to your downloads. It works offline, and you can also give it to Claude to update.');
+  }
+
+  const picker = $('files');
+  picker.addEventListener('change', () => { readFiles([...picker.files]); picker.value = ''; });
+  document.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if ('openFiles' in b.dataset) picker.click();
+    else if ('example' in b.dataset) loadExample(b);
+    else if ('save' in b.dataset) saveCopy();
+    else if ('forget' in b.dataset) {
+      const everything = !library.example;  // "Back" from the example keeps the device; "Forget my library" clears it too
+      if (everything && !window.confirm('Forget your library and device in this browser? Your files on this device are not touched.')) return;
+      library = null;
+      rated = null;
+      if (everything) {
+        chosen = { name: '', gpuClass: '' };
+        try { localStorage.removeItem(LIBRARY_KEY); } catch (err) { /* storage blocked */ }
+      } else {
+        store();
+      }
+      rebuild();
+      window.scrollTo({ top: 0 });
+    }
+  });
+  document.addEventListener('change', e => {
+    if (e.target.matches('[data-dev-class]')) {
+      chosen.gpuClass = e.target.value;
+      store();
+      if (library) rebuild().then(() => { const box = $('mine').querySelector('details'); if (box) box.open = true; });
+      else renderDeviceFields();
+    }
+  });
+  document.addEventListener('input', e => {
+    if (!e.target.matches('[data-dev-name]')) return;
+    chosen.name = e.target.value.trim();
+    store();
+    if (library) {
+      DATA.device = chosen.name;
+      const d = DEVICE_CLASSES[chosen.gpuClass];
+      const label = $('mine').querySelector('.sumdev');
+      if (d && label) label.textContent = `· ${chosen.name || d.title} · ${d.label}`;
+    }
+  });
+
+  // Drop files anywhere on the page.
+  let dragDepth = 0;
+  document.addEventListener('dragenter', e => { if (e.dataTransfer && [...e.dataTransfer.types].includes('Files')) { dragDepth++; document.body.classList.add('dropping'); } });
+  document.addEventListener('dragleave', () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) document.body.classList.remove('dropping'); });
+  document.addEventListener('dragover', e => { if (e.dataTransfer && [...e.dataTransfer.types].includes('Files')) e.preventDefault(); });
+  document.addEventListener('drop', e => {
+    if (!e.dataTransfer || !e.dataTransfer.files.length) return;
+    e.preventDefault();
+    dragDepth = 0;
+    document.body.classList.remove('dropping');
+    readFiles([...e.dataTransfer.files]);
+  });
+
+  loadStored();
+  rebuild();
+})();
+</script>

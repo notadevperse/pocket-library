@@ -1,0 +1,945 @@
+{
+ "source": "pocket-library",
+ "kind": "example",
+ "about": "An example library of well-known games with made-up playtime, dates and collections. Not anyone's real games.",
+ "games": [
+  {
+   "appid": 620,
+   "name": "Portal 2",
+   "minutes": 0
+  },
+  {
+   "appid": 400,
+   "name": "Portal",
+   "minutes": 1044
+  },
+  {
+   "appid": 413150,
+   "name": "Stardew Valley",
+   "minutes": 4933
+  },
+  {
+   "appid": 367520,
+   "name": "Hollow Knight",
+   "minutes": 1363
+  },
+  {
+   "appid": 504230,
+   "name": "Celeste",
+   "minutes": 7048
+  },
+  {
+   "appid": 1145360,
+   "name": "Hades",
+   "minutes": 6581
+  },
+  {
+   "appid": 105600,
+   "name": "Terraria",
+   "minutes": 2072
+  },
+  {
+   "appid": 646570,
+   "name": "Slay the Spire",
+   "minutes": 7394
+  },
+  {
+   "appid": 250900,
+   "name": "The Binding of Isaac: Rebirth",
+   "minutes": 8686
+  },
+  {
+   "appid": 268910,
+   "name": "Cuphead",
+   "minutes": 7214
+  },
+  {
+   "appid": 588650,
+   "name": "Dead Cells",
+   "minutes": 5132
+  },
+  {
+   "appid": 391540,
+   "name": "Undertale",
+   "minutes": 7356
+  },
+  {
+   "appid": 1794680,
+   "name": "Vampire Survivors",
+   "minutes": 0
+  },
+  {
+   "appid": 322330,
+   "name": "Don't Starve Together",
+   "minutes": 1924
+  },
+  {
+   "appid": 753640,
+   "name": "Outer Wilds",
+   "minutes": 64
+  },
+  {
+   "appid": 220,
+   "name": "Half-Life 2",
+   "minutes": 901
+  },
+  {
+   "appid": 70,
+   "name": "Half-Life",
+   "minutes": 3058
+  },
+  {
+   "appid": 292030,
+   "name": "The Witcher 3: Wild Hunt — Remastered",
+   "minutes": 3922
+  },
+  {
+   "appid": 1091500,
+   "name": "Cyberpunk 2077",
+   "minutes": 4758
+  },
+  {
+   "appid": 1245620,
+   "name": "ELDEN RING",
+   "minutes": 0
+  },
+  {
+   "appid": 1086940,
+   "name": "Baldur's Gate 3",
+   "minutes": 4394
+  },
+  {
+   "appid": 271590,
+   "name": "Grand Theft Auto V Legacy",
+   "minutes": 8829
+  },
+  {
+   "appid": 1174180,
+   "name": "Red Dead Redemption 2",
+   "minutes": 5907
+  },
+  {
+   "appid": 489830,
+   "name": "The Elder Scrolls V: Skyrim Special Edition",
+   "minutes": 5438
+  },
+  {
+   "appid": 377160,
+   "name": "Fallout 4",
+   "minutes": 3219
+  },
+  {
+   "appid": 22380,
+   "name": "Fallout: New Vegas",
+   "minutes": 8592
+  },
+  {
+   "appid": 8930,
+   "name": "Sid Meier's Civilization V",
+   "minutes": 5149
+  },
+  {
+   "appid": 289070,
+   "name": "Sid Meier's Civilization VI",
+   "minutes": 8947
+  },
+  {
+   "appid": 255710,
+   "name": "Cities: Skylines",
+   "minutes": 7099
+  },
+  {
+   "appid": 294100,
+   "name": "RimWorld",
+   "minutes": 1851
+  },
+  {
+   "appid": 427520,
+   "name": "Factorio",
+   "minutes": 8404
+  },
+  {
+   "appid": 1966720,
+   "name": "Lethal Company",
+   "minutes": 7543
+  },
+  {
+   "appid": 892970,
+   "name": "Valheim",
+   "minutes": 0
+  },
+  {
+   "appid": 730,
+   "name": "Counter-Strike 2",
+   "minutes": 437
+  },
+  {
+   "appid": 570,
+   "name": "Dota 2",
+   "minutes": 8059
+  },
+  {
+   "appid": 440,
+   "name": "Team Fortress 2",
+   "minutes": 8878
+  },
+  {
+   "appid": 578080,
+   "name": "PUBG: BATTLEGROUNDS",
+   "minutes": 4404
+  },
+  {
+   "appid": 359550,
+   "name": "Tom Clancy's Rainbow Six Siege",
+   "minutes": 8918
+  },
+  {
+   "appid": 1172470,
+   "name": "Apex Legends",
+   "minutes": 5846
+  },
+  {
+   "appid": 252490,
+   "name": "Rust",
+   "minutes": 566
+  },
+  {
+   "appid": 1085660,
+   "name": "Destiny 2",
+   "minutes": 1386
+  },
+  {
+   "appid": 381210,
+   "name": "Dead by Daylight",
+   "minutes": 3303
+  },
+  {
+   "appid": 4000,
+   "name": "Garry's Mod",
+   "minutes": 8678
+  },
+  {
+   "appid": 550,
+   "name": "Left 4 Dead 2",
+   "minutes": 1272
+  },
+  {
+   "appid": 945360,
+   "name": "Among Us",
+   "minutes": 5764
+  },
+  {
+   "appid": 457140,
+   "name": "Oxygen Not Included",
+   "minutes": 2524
+  },
+  {
+   "appid": 233860,
+   "name": "Kenshi",
+   "minutes": 1549
+  },
+  {
+   "appid": 230410,
+   "name": "Warframe",
+   "minutes": 6811
+  },
+  {
+   "appid": 594650,
+   "name": "Hunt: Showdown 1896",
+   "minutes": 1356
+  },
+  {
+   "appid": 1938090,
+   "name": "Call of Duty",
+   "minutes": 3338
+  },
+  {
+   "appid": 1817070,
+   "name": "Marvel’s Spider-Man Remastered",
+   "minutes": 7396
+  },
+  {
+   "appid": 1593500,
+   "name": "God of War",
+   "minutes": 0
+  },
+  {
+   "appid": 1888930,
+   "name": "The Last of Us™ Part I",
+   "minutes": 2749
+  },
+  {
+   "appid": 990080,
+   "name": "Hogwarts Legacy",
+   "minutes": 1293
+  },
+  {
+   "appid": 2050650,
+   "name": "Resident Evil 4",
+   "minutes": 7657
+  },
+  {
+   "appid": 883710,
+   "name": "Resident Evil 2",
+   "minutes": 4699
+  },
+  {
+   "appid": 582010,
+   "name": "Monster Hunter: World",
+   "minutes": 0
+  },
+  {
+   "appid": 1446780,
+   "name": "MONSTER HUNTER RISE",
+   "minutes": 8974
+  },
+  {
+   "appid": 814380,
+   "name": "Sekiro™: Shadows Die Twice",
+   "minutes": 4824
+  },
+  {
+   "appid": 374320,
+   "name": "DARK SOULS™ III",
+   "minutes": 3889
+  },
+  {
+   "appid": 570940,
+   "name": "DARK SOULS™: REMASTERED",
+   "minutes": 1521
+  },
+  {
+   "appid": 1687950,
+   "name": "Persona 5 Royal",
+   "minutes": 0
+  },
+  {
+   "appid": 1113000,
+   "name": "Persona 4 Golden",
+   "minutes": 0
+  },
+  {
+   "appid": 524220,
+   "name": "NieR: Automata",
+   "minutes": 0
+  },
+  {
+   "appid": 1158310,
+   "name": "Crusader Kings III",
+   "minutes": 881
+  },
+  {
+   "appid": 236850,
+   "name": "Europa Universalis IV",
+   "minutes": 4049
+  },
+  {
+   "appid": 281990,
+   "name": "Stellaris",
+   "minutes": 8487
+  },
+  {
+   "appid": 394360,
+   "name": "Hearts of Iron IV",
+   "minutes": 3627
+  },
+  {
+   "appid": 1142710,
+   "name": "Total War: WARHAMMER III",
+   "minutes": 6784
+  },
+  {
+   "appid": 976730,
+   "name": "Halo: The Master Chief Collection",
+   "minutes": 7457
+  },
+  {
+   "appid": 782330,
+   "name": "DOOM Eternal",
+   "minutes": 1411
+  },
+  {
+   "appid": 379720,
+   "name": "DOOM",
+   "minutes": 1849
+  },
+  {
+   "appid": 2379780,
+   "name": "Balatro",
+   "minutes": 0
+  },
+  {
+   "appid": 1868140,
+   "name": "DAVE THE DIVER",
+   "minutes": 353
+  },
+  {
+   "appid": 1817230,
+   "name": "Hi-Fi RUSH",
+   "minutes": 39
+  },
+  {
+   "appid": 632470,
+   "name": "Disco Elysium",
+   "minutes": 1613
+  },
+  {
+   "appid": 435150,
+   "name": "Divinity: Original Sin 2",
+   "minutes": 0
+  },
+  {
+   "appid": 1426210,
+   "name": "It Takes Two",
+   "minutes": 0
+  },
+  {
+   "appid": 1150690,
+   "name": "Omori",
+   "minutes": 5121
+  },
+  {
+   "appid": 1092790,
+   "name": "Inscryption",
+   "minutes": 4134
+  },
+  {
+   "appid": 2694490,
+   "name": "Path of Exile 2",
+   "minutes": 0
+  },
+  {
+   "appid": 2344520,
+   "name": "Diablo® IV",
+   "minutes": 7277
+  },
+  {
+   "appid": 1057090,
+   "name": "Ori and the Will of the Wisps",
+   "minutes": 691
+  },
+  {
+   "appid": 387290,
+   "name": "Ori and the Blind Forest: Definitive Edition",
+   "minutes": 4652
+  },
+  {
+   "appid": 257850,
+   "name": "Hyper Light Drifter",
+   "minutes": 8202
+  },
+  {
+   "appid": 1449850,
+   "name": "Yu-Gi-Oh! Master Duel",
+   "minutes": 5068
+  },
+  {
+   "appid": 2357570,
+   "name": "Overwatch®",
+   "minutes": 1763
+  },
+  {
+   "appid": 739630,
+   "name": "Phasmophobia",
+   "minutes": 8372
+  },
+  {
+   "appid": 39210,
+   "name": "FINAL FANTASY XIV Online",
+   "minutes": 6299
+  },
+  {
+   "appid": 678950,
+   "name": "Dragon Ball FighterZ",
+   "minutes": 5543
+  },
+  {
+   "appid": 1671200,
+   "name": "Honkai Impact 3rd",
+   "minutes": 1448
+  },
+  {
+   "appid": 6060,
+   "name": "Star Wars: Battlefront 2 (Classic, 2005)",
+   "minutes": 3743
+  },
+  {
+   "appid": 1286830,
+   "name": "STAR WARS™: The Old Republic™",
+   "minutes": 5151
+  },
+  {
+   "appid": 1145350,
+   "name": "Hades II",
+   "minutes": 8546
+  },
+  {
+   "appid": 4920,
+   "name": "Natural Selection 2",
+   "minutes": 3707
+  },
+  {
+   "appid": 2252570,
+   "name": "Football Manager 2024",
+   "minutes": 1812
+  },
+  {
+   "appid": 1262350,
+   "name": "SIGNALIS",
+   "minutes": 0
+  },
+  {
+   "appid": 210970,
+   "name": "The Witness",
+   "minutes": 2316
+  },
+  {
+   "appid": 312520,
+   "name": "Rain World",
+   "minutes": 6464
+  },
+  {
+   "appid": 48700,
+   "name": "Mount & Blade: Warband",
+   "minutes": 8487
+  }
+ ],
+ "licenses": [
+  {
+   "name": "Portal 2",
+   "date": "2023-10-26"
+  },
+  {
+   "name": "Portal",
+   "date": "2018-06-09"
+  },
+  {
+   "name": "Stardew Valley",
+   "date": "2024-05-21"
+  },
+  {
+   "name": "Hollow Knight",
+   "date": "2020-06-05"
+  },
+  {
+   "name": "Celeste",
+   "date": "2020-02-20"
+  },
+  {
+   "name": "Hades",
+   "date": "2014-11-13"
+  },
+  {
+   "name": "Terraria",
+   "date": "2017-07-20"
+  },
+  {
+   "name": "Slay the Spire",
+   "date": "2015-06-04"
+  },
+  {
+   "name": "The Binding of Isaac: Rebirth",
+   "date": "2019-02-04"
+  },
+  {
+   "name": "Cuphead",
+   "date": "2024-02-01"
+  },
+  {
+   "name": "Dead Cells",
+   "date": "2016-01-04"
+  },
+  {
+   "name": "Undertale",
+   "date": "2016-07-09"
+  },
+  {
+   "name": "Vampire Survivors",
+   "date": "2022-05-25"
+  },
+  {
+   "name": "Don't Starve Together",
+   "date": "2024-09-16"
+  },
+  {
+   "name": "Outer Wilds",
+   "date": "2014-11-20"
+  },
+  {
+   "name": "Half-Life 2",
+   "date": "2024-06-17"
+  },
+  {
+   "name": "Half-Life",
+   "date": "2017-02-08"
+  },
+  {
+   "name": "The Witcher 3: Wild Hunt — Remastered",
+   "date": "2019-01-03"
+  },
+  {
+   "name": "Cyberpunk 2077",
+   "date": "2025-03-06"
+  },
+  {
+   "name": "ELDEN RING",
+   "date": "2017-12-26"
+  },
+  {
+   "name": "Baldur's Gate 3",
+   "date": "2018-03-30"
+  },
+  {
+   "name": "Grand Theft Auto V Legacy",
+   "date": "2023-06-20"
+  },
+  {
+   "name": "Red Dead Redemption 2",
+   "date": "2013-08-08"
+  },
+  {
+   "name": "The Elder Scrolls V: Skyrim Special Edition",
+   "date": "2025-06-26"
+  },
+  {
+   "name": "Fallout 4",
+   "date": "2019-11-23"
+  },
+  {
+   "name": "Fallout: New Vegas",
+   "date": "2015-07-15"
+  },
+  {
+   "name": "Sid Meier's Civilization V",
+   "date": "2021-03-15"
+  },
+  {
+   "name": "Sid Meier's Civilization VI",
+   "date": "2019-09-23"
+  },
+  {
+   "name": "Cities: Skylines",
+   "date": "2022-02-01"
+  },
+  {
+   "name": "RimWorld",
+   "date": "2021-01-19"
+  },
+  {
+   "name": "Factorio",
+   "date": "2024-04-07"
+  },
+  {
+   "name": "Lethal Company",
+   "date": "2014-01-22"
+  },
+  {
+   "name": "Valheim",
+   "date": "2024-09-16"
+  },
+  {
+   "name": "Counter-Strike 2",
+   "date": "2015-11-19"
+  },
+  {
+   "name": "Dota 2",
+   "date": "2017-07-31"
+  },
+  {
+   "name": "Team Fortress 2",
+   "date": "2013-04-10"
+  },
+  {
+   "name": "PUBG: BATTLEGROUNDS",
+   "date": "2020-10-07"
+  },
+  {
+   "name": "Tom Clancy's Rainbow Six Siege",
+   "date": "2025-04-07"
+  },
+  {
+   "name": "Apex Legends",
+   "date": "2015-07-04"
+  },
+  {
+   "name": "Rust",
+   "date": "2018-08-28"
+  },
+  {
+   "name": "Destiny 2",
+   "date": "2019-08-20"
+  },
+  {
+   "name": "Dead by Daylight",
+   "date": "2017-11-04"
+  },
+  {
+   "name": "Garry's Mod",
+   "date": "2017-12-12"
+  },
+  {
+   "name": "Left 4 Dead 2",
+   "date": "2024-03-05"
+  },
+  {
+   "name": "Among Us",
+   "date": "2017-04-23"
+  },
+  {
+   "name": "Oxygen Not Included",
+   "date": "2023-07-19"
+  },
+  {
+   "name": "Kenshi",
+   "date": "2024-08-06"
+  },
+  {
+   "name": "Warframe",
+   "date": "2013-12-12"
+  },
+  {
+   "name": "Hunt: Showdown 1896",
+   "date": "2024-07-31"
+  },
+  {
+   "name": "Call of Duty",
+   "date": "2019-07-26"
+  },
+  {
+   "name": "Marvel’s Spider-Man Remastered",
+   "date": "2025-07-16"
+  },
+  {
+   "name": "God of War",
+   "date": "2023-08-04"
+  },
+  {
+   "name": "The Last of Us™ Part I",
+   "date": "2015-08-16"
+  },
+  {
+   "name": "Hogwarts Legacy",
+   "date": "2013-04-27"
+  },
+  {
+   "name": "Resident Evil 4",
+   "date": "2017-12-01"
+  },
+  {
+   "name": "Resident Evil 2",
+   "date": "2020-03-21"
+  },
+  {
+   "name": "Monster Hunter: World",
+   "date": "2019-03-01"
+  },
+  {
+   "name": "MONSTER HUNTER RISE",
+   "date": "2016-02-18"
+  },
+  {
+   "name": "Sekiro™: Shadows Die Twice",
+   "date": "2016-03-31"
+  },
+  {
+   "name": "DARK SOULS™ III",
+   "date": "2016-12-14"
+  },
+  {
+   "name": "DARK SOULS™: REMASTERED",
+   "date": "2020-09-01"
+  },
+  {
+   "name": "Persona 5 Royal",
+   "date": "2014-01-29"
+  },
+  {
+   "name": "Persona 4 Golden",
+   "date": "2024-09-09"
+  },
+  {
+   "name": "NieR: Automata",
+   "date": "2015-05-19"
+  },
+  {
+   "name": "Crusader Kings III",
+   "date": "2023-02-20"
+  },
+  {
+   "name": "Europa Universalis IV",
+   "date": "2020-06-09"
+  },
+  {
+   "name": "Stellaris",
+   "date": "2015-07-19"
+  },
+  {
+   "name": "Hearts of Iron IV",
+   "date": "2013-12-05"
+  },
+  {
+   "name": "Total War: WARHAMMER III",
+   "date": "2019-10-03"
+  },
+  {
+   "name": "Halo: The Master Chief Collection",
+   "date": "2016-08-15"
+  },
+  {
+   "name": "DOOM Eternal",
+   "date": "2018-01-31"
+  },
+  {
+   "name": "DOOM",
+   "date": "2023-04-26"
+  },
+  {
+   "name": "Balatro",
+   "date": "2022-03-10"
+  },
+  {
+   "name": "DAVE THE DIVER",
+   "date": "2018-11-26"
+  },
+  {
+   "name": "Hi-Fi RUSH",
+   "date": "2015-08-09"
+  },
+  {
+   "name": "Disco Elysium",
+   "date": "2017-01-25"
+  },
+  {
+   "name": "Divinity: Original Sin 2",
+   "date": "2017-02-10"
+  },
+  {
+   "name": "It Takes Two",
+   "date": "2015-10-10"
+  },
+  {
+   "name": "Omori",
+   "date": "2014-03-30"
+  },
+  {
+   "name": "Inscryption",
+   "date": "2015-06-08"
+  },
+  {
+   "name": "Path of Exile 2",
+   "date": "2019-12-15"
+  },
+  {
+   "name": "Diablo® IV",
+   "date": "2016-02-16"
+  },
+  {
+   "name": "Ori and the Will of the Wisps",
+   "date": "2022-07-12"
+  },
+  {
+   "name": "Ori and the Blind Forest: Definitive Edition",
+   "date": "2024-08-20"
+  },
+  {
+   "name": "Hyper Light Drifter",
+   "date": "2020-05-04"
+  },
+  {
+   "name": "Yu-Gi-Oh! Master Duel",
+   "date": "2022-09-21"
+  },
+  {
+   "name": "Overwatch®",
+   "date": "2013-04-04"
+  },
+  {
+   "name": "Phasmophobia",
+   "date": "2019-08-12"
+  },
+  {
+   "name": "FINAL FANTASY XIV Online",
+   "date": "2023-11-22"
+  },
+  {
+   "name": "Dragon Ball FighterZ",
+   "date": "2013-05-06"
+  },
+  {
+   "name": "Honkai Impact 3rd",
+   "date": "2023-02-24"
+  },
+  {
+   "name": "Star Wars: Battlefront 2 (Classic, 2005)",
+   "date": "2022-03-01"
+  },
+  {
+   "name": "STAR WARS™: The Old Republic™",
+   "date": "2021-12-06"
+  },
+  {
+   "name": "Hades II",
+   "date": "2020-03-27"
+  },
+  {
+   "name": "Natural Selection 2",
+   "date": "2021-08-18"
+  },
+  {
+   "name": "Football Manager 2024",
+   "date": "2024-12-17"
+  },
+  {
+   "name": "SIGNALIS",
+   "date": "2017-02-10"
+  },
+  {
+   "name": "The Witness",
+   "date": "2015-06-14"
+  },
+  {
+   "name": "Rain World",
+   "date": "2014-11-06"
+  },
+  {
+   "name": "Mount & Blade: Warband",
+   "date": "2017-04-18"
+  }
+ ],
+ "collections": {
+  "Favorites": [
+   "620",
+   "367520",
+   "504230",
+   "1145360",
+   "413150",
+   "753640",
+   "632470",
+   "2379780",
+   "646570",
+   "220"
+  ],
+  "Next Up": [
+   "1092790",
+   "1150690",
+   "1262350",
+   "257850",
+   "210970",
+   "312520",
+   "1113000",
+   "1145350",
+   "1868140"
+  ],
+  "Co-op": [
+   "322330",
+   "1966720",
+   "892970",
+   "550",
+   "1426210",
+   "739630",
+   "105600",
+   "945360",
+   "268910"
+  ]
+ }
+}
