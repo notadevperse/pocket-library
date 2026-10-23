@@ -97,13 +97,17 @@ def load_requirements(path, wanted):
     return out
 
 
-def load_protondb(path, wanted):
-    """App ID -> (reports, reports saying it runs), using recent reports when there are enough."""
+def load_protondb(path, wanted, titles=None):
+    """App ID -> (reports, reports saying it runs), using recent reports when there are enough.
+
+    If titles is a dict, it is filled with each game's ProtonDB title (for naming added games)."""
     cutoff = time.time() - RECENT_YEARS * 365 * 86400
     counts = defaultdict(lambda: [0, 0, 0, 0])  # all, all yes, recent, recent yes
     for report in json_array_items(path):
         app = str(report.get('app', {}).get('steam', {}).get('appId'))
         if app in wanted:
+            if titles is not None and report.get('app', {}).get('title'):
+                titles.setdefault(app, report['app']['title'])
             runs = report.get('responses', {}).get('verdict') == 'yes'
             c = counts[app]
             c[0] += 1
@@ -264,8 +268,14 @@ def main():
         have.add('requirements')
     else:
         missing.append('PCGameBenchmarks requirements')
-    for app in added:
-        name = req.get(app, (None, None, ''))[2]
+    titles = {}
+    if path('protondb.json'):
+        pdb = load_protondb(path('protondb.json'), wanted, titles)
+        have.add('protondb')
+    else:
+        missing.append('ProtonDB export')
+    for app in added:  # name an added game from the requirements list, or else from ProtonDB
+        name = req.get(app, (None, None, ''))[2] or titles.get(app, '')
         if name:
             games[app] = R.blank(name)
     names = {app: e['name'] for app, e in games.items()}
@@ -274,11 +284,6 @@ def main():
         have.add('gamenative')
     else:
         missing.append('GameNative worklist')
-    if path('protondb.json'):
-        pdb = load_protondb(path('protondb.json'), wanted)
-        have.add('protondb')
-    else:
-        missing.append('ProtonDB export')
     if path('anticheat.json'):
         ac = load_anticheat(path('anticheat.json'))
         have.add('anticheat')

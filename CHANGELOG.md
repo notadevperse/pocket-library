@@ -2,6 +2,11 @@
 
 What changed in each version of Pocket Library. Dates are when the version was published.
 
+## Version 4.1 (October 23, 2026)
+
+- **11,064 games**, up from 5,000: every game that had 5 or more ProtonDB reports as of October 2026 is now covered. The new entries have a ProtonDB report behind them, and a weight where PCGameBenchmarks has the game's minimum requirements; the rest show an Unknown weight. Their input label defaults to Controller, because none of the datasets say how a game plays on a touchscreen.
+- The first monthly data refresh ran and was merged: updated GameNative reports and DroidDeck 0.6.0.
+
 ## Version 4 (October 2026)
 
 - **Works without Claude.** The page now runs as a website at [notadevperse.github.io/pocket-library](https://notadevperse.github.io/pocket-library/). Pick your device, open your Steam files, and it rates your games in your browser. Your files are never uploaded, and the library is remembered in your browser only.

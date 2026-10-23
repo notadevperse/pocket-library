@@ -9,7 +9,7 @@ Pocket Library is a single page listing a person's Steam games, each with a weig
 
 Files in this skill:
 - `template.html`: the blank page. Never change its design; only its data block changes.
-- `ratings.json`: 5,000 starting entries. Its format is described at the top of `scripts/ratings.py`.
+- `ratings.json`: 11,064 starting entries. Its format is described at the top of `scripts/ratings.py`.
 - `bookmarks/`: readable code for the two bookmarks the person uses to get their games.
 - `scripts/build.py`: fills the page. `python3 scripts/build.py --help` lists the inputs.
 - `scripts/fetch-sources.sh`: downloads the public datasets (see Data sources).

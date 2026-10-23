@@ -107,7 +107,7 @@ Each game gets a **weight**, from Steam's minimum requirements, and separate **r
 - **Heads-up**: a known extra hurdle, like a publisher launcher.
 - **Based on**: the data behind the entry, or "estimate only".
 
-The list covers 5,000 Steam games: Steam's top sellers, about 2,160 Steam Deck Verified games and the most-reported games on ProtonDB. Of these, 4,755 are backed by data. On the website, games outside the list show as Unknown; Claude can judge them for you.
+The list covers 11,064 Steam games: Steam's top sellers, about 2,160 Steam Deck Verified games, and every game that had 5 or more ProtonDB reports as of October 2026. Of these, 10,814 are backed by data. On the website, games outside the list show as Unknown; Claude can judge them for you.
 
 With Claude, re-checking compatibility downloads about 75 MB of public data, checks your whole library against it in seconds, and has Claude look at the few games the data flags. It never crawls Steam or any app's servers. Each request counts toward your Claude usage limits.
 
@@ -122,7 +122,7 @@ Best effort at the time of publishing. Specifically:
 - **Minimum requirements** are often overstated by small 2D games and understated by some big ones, so weights from requirements alone are rough.
 - **Anti-cheat**: the anti-cheat list covers about 680 Steam games. A game it marks as blocked may still have an offline mode that works; those are checked by hand where known.
 - **Android versions** are marked by hand (89 games). Many more games have one.
-- **132 games have unknown weight**, and 245 entries say "estimate only" because there was no data.
+- **2,796 games have unknown weight**, mostly among the newest additions, which have no minimum-requirements data. 250 entries say "estimate only" because there was no data at all.
 - **Non-Snapdragon devices** get a simple one-step adjustment, which hasn't been checked against real results.
 
 ## What's in this project
@@ -134,7 +134,7 @@ Best effort at the time of publishing. Specifically:
 - `pocket-library/`: the same skill unzipped, so you can read it:
   - `SKILL.md`: the instructions Claude follows.
   - `template.html`: the blank page.
-  - `ratings.json`: the 5,000 starting entries. The format is described at the top of `scripts/ratings.py`.
+  - `ratings.json`: the 11,064 starting entries. The format is described at the top of `scripts/ratings.py`.
   - `example-library.json`: the example library, about 100 well-known games with made-up playtime.
   - `apps.json`: the three apps' latest versions.
   - `bookmarks/`: readable code for the two bookmarks.
