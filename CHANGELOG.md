@@ -2,6 +2,11 @@
 
 What changed in each version of Pocket Library. Dates are when the version was published.
 
+## Version 4.2 (October 2026)
+
+- **What changed this month.** Each game that changed in the latest monthly data says so, for example "Changed in the Nov 2026 data: GameNative: works (was mixed)". The **Changed lately** filter shows only those games.
+- The monthly pull request now lists what changed in plain words: which games got better or worse reports, first verdicts, and new weights or statuses.
+
 ## Version 4.1 (October 23, 2026)
 
 - **11,064 games**, up from 5,000: every game that had 5 or more ProtonDB reports as of October 2026 is now covered. The new entries have a ProtonDB report behind them, and a weight where PCGameBenchmarks has the game's minimum requirements; the rest show an Unknown weight. Their input label defaults to Controller, because none of the datasets say how a game plays on a touchscreen.

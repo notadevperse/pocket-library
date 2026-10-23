@@ -1,7 +1,7 @@
 # Once a month: download the four public datasets, re-check every game in
-# ratings.json, look up the three apps' latest releases, rebuild the website
-# and the skill zip, run the tests, and open a pull request with the result if anything
-# changed. Nothing reaches the website until the pull request is merged; then GitHub
+# ratings.json, note in plain words what changed for each game, look up the three
+# apps' latest releases, rebuild the website and the skill zip, run the tests, and open
+# a pull request with the result if anything changed. Nothing reaches the website until the pull request is merged; then GitHub
 # Pages updates by itself.
 #
 # Needs one setting: Settings → Actions → General → Workflow permissions →
@@ -43,9 +43,15 @@ jobs:
 
       - name: Re-check every game
         run: |
+          cp pocket-library/ratings.json "$RUNNER_TEMP/old-ratings.json"
           python -I pocket-library/scripts/evidence.py --ratings pocket-library/ratings.json --all \
             --sources "$RUNNER_TEMP/sources" --out pocket-library/ratings.json \
             --review "$RUNNER_TEMP/review.json" | tee "$RUNNER_TEMP/summary.txt"
+
+      - name: Note what changed for each game
+        run: |
+          python -I pocket-library/scripts/changes.py --old "$RUNNER_TEMP/old-ratings.json" \
+            --new pocket-library/ratings.json --summary "$RUNNER_TEMP/changes.md" --write
 
       - name: Check the apps' latest releases
         env:
@@ -86,6 +92,10 @@ jobs:
           if [ -z "$(gh pr list --head "$branch" --state open --json number --jq '.[].number')" ]; then
             {
               cat "$RUNNER_TEMP/message.txt"
+              echo
+              echo "## What changed"
+              echo
+              cat "$RUNNER_TEMP/changes.md"
               echo
               echo "The tests passed. Look over the changes, then click **Merge pull request** to publish them,"
               echo "or close this pull request to skip this month."

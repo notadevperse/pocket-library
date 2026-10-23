@@ -205,6 +205,8 @@ def main():
             data[key] = value
     if meta.get('sources'):
         data['sources'] = meta['sources']
+    if meta.get('changes'):
+        data['changes'] = meta['changes']
     data['games'] = [{k: g[k] for k in ('appid', 'hours', 'added', 'collections') + R.FIELDS} for g in games]
 
     blob = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')

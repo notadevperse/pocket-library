@@ -193,6 +193,8 @@ li.g .body { padding: 10px 12px; min-width: 0; display: grid; gap: 4px; }
 .note { font-size: 0.82rem; color: var(--muted); }
 .heads { font-size: 0.8rem; color: var(--heavy); }
 .heads::before { content: "Heads-up: "; font-weight: 600; }
+.changed { font-size: 0.8rem; color: var(--muted); }
+.changed b { font-weight: 600; color: var(--accent); }
 .tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .tag { font-size: 0.72rem; padding: 1px 7px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); }
 .empty { padding: 28px 16px; text-align: center; color: var(--muted); }
@@ -244,6 +246,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       <div class="seg" role="group" aria-label="Reports">
         <button type="button" data-reports="all" aria-pressed="true">All reports</button>
         <button type="button" data-reports="clean" aria-pressed="false">No problems reported</button>
+        <button type="button" data-reports="changed" aria-pressed="false" id="reports-changed" hidden>Changed lately</button>
       </div>
     </div>
     </div>
@@ -371,6 +374,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       <ul>
         <li><b>Touch / Touch OK / Controller</b>: how well it plays without a gamepad. A note, not a rule.</li>
         <li><b>Heads-up</b>: an extra hurdle, like a publisher launcher (EA, Ubisoft, Rockstar).</li>
+        <li><b>Changed</b>: what changed for the game in the latest monthly data, such as a new GameNative verdict. "Changed lately" under Filters shows only those games.</li>
         <li><b>Based on</b>: the data behind the entry: Steam's minimum requirements, ProtonDB, GameNative, the anti-cheat list, or a check by hand. "Estimate only" means there was no data.</li>
       </ul>
       <p class="status">Best effort at the time of publishing. Nothing here is a test result, and some entries will be wrong.</p>
@@ -555,6 +559,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
   let counts = {};
   let presentGroups = [];
   let hasDates = false;
+  let hasChanges = false;
   let collectionNames = [];
 
   // ---- always-on parts of the page ---------------------------------------------
@@ -626,6 +631,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       basis: String(game.basis || ''),
       reports,
       problem: reports.some(([k, v]) => REPORTS[k][v][1] === 'bad'),
+      change: String(((DATA.changes || {}).games || {})[game.appid] || ''),
       collections,
       searchText: (game.name + ' ' + collections.join(' ')).toLowerCase(),
     };
@@ -646,11 +652,13 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     items.forEach(x => { counts[x.group] = (counts[x.group] || 0) + 1; });
     presentGroups = GROUPS.map(([key]) => key).filter(key => counts[key]);
     hasDates = items.some(x => x.added);
+    hasChanges = items.some(x => x.change);
     collectionNames = [...new Set(items.flatMap(x => x.collections))]
       .sort((a, b) => collectionRank(a) - collectionRank(b) || a.localeCompare(b));
     if (![...state.groups].some(k => counts[k])) state.groups = new Set(presentGroups.filter(k => k !== 'other' && k !== 'no'));
     if (state.collection !== 'all' && state.collection !== '__none' && !collectionNames.includes(state.collection)) state.collection = 'all';
     if (state.sort === 'new' && !hasDates) state.sort = 'weight';
+    if (state.reports === 'changed' && !hasChanges) state.reports = 'all';
     state.limit = PAGE_SIZE;
   }
 
@@ -671,18 +679,22 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
 
   // ---- the deck --------------------------------------------------------------------
 
+  function monthOf(iso) {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}/.test(iso)) return iso || '';
+    const [y, m] = iso.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
+  }
+
   function newestDataDate() {
     const dates = Object.values(DATA.sources || {}).filter(Boolean).sort();
-    const latest = dates[dates.length - 1] || DATA.updated;
-    if (!latest || !/^\d{4}-\d{2}-\d{2}/.test(latest)) return latest || '';
-    const [y, m] = latest.split('-').map(Number);
-    return new Date(y, m - 1, 1).toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
+    return monthOf(dates[dates.length - 1] || DATA.updated);
   }
 
   function renderDeck() {
     $('deck').hidden = false;
     $('intro').hidden = true;
     $('sort-new').hidden = !hasDates;
+    $('reports-changed').hidden = !hasChanges;
     const asOf = newestDataDate();
     $('sub').textContent = (DATA.example ? 'Example · ' : '') + `${items.length.toLocaleString()} games`
       + (asOf ? ` · best effort, data as of ${asOf}` : '');
@@ -740,6 +752,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       + (x.heavierForDevice ? '<div class="note">Shown one step heavier for this device.</div>' : '')
       + (x.note ? `<div class="note">${esc(x.note)}</div>` : '')
       + (x.heads ? `<div class="heads">${esc(x.heads)}</div>` : '')
+      + (x.change ? `<div class="changed"><b>Changed in the ${esc(monthOf((DATA.changes || {}).since))} data:</b> ${esc(x.change)}</div>` : '')
       + basis
       + '</div></li>';
   }
@@ -748,7 +761,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     const q = state.query.trim().toLowerCase();
     if (q) return items.filter(x => x.searchText.includes(q));
     const inputOk = x => state.input === 'all' || (state.input === 'touch' ? x.touch === 't' : x.touch === 't' || x.touch === 'o');
-    const reportsOk = x => state.reports === 'all' || !x.problem;
+    const reportsOk = x => state.reports === 'all' || (state.reports === 'changed' ? Boolean(x.change) : !x.problem);
     const collectionOk = x => state.collection === 'all'
       || (state.collection === '__none' ? !x.collections.length : x.collections.includes(state.collection));
     return items.filter(x => state.groups.has(x.group) && inputOk(x) && reportsOk(x) && collectionOk(x));
@@ -766,7 +779,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     const on = [];
     if (state.collection !== 'all') on.push(state.collection === '__none' ? 'No collection' : state.collection);
     if (state.input !== 'all') on.push(state.input === 'touch' ? 'Touch' : 'Touch + OK');
-    if (state.reports !== 'all') on.push('No problems');
+    if (state.reports !== 'all') on.push(state.reports === 'changed' ? 'Changed lately' : 'No problems');
     const badge = on.length === 1 ? esc(on[0]) : on.length + ' on';
     $('fbtn').innerHTML = 'Filters' + (on.length ? `<span class="on">${badge}</span>` : '');
   }
@@ -993,7 +1006,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     rated = rateLibrary(library, data.games || {});
     const filled = Object.assign({}, BASE, {
       device: chosen.name, gpuClass: chosen.gpuClass || 'full', chip: '', gpu: '',
-      updated: data.updated || '', sources: data.sources || {},
+      updated: data.updated || '', sources: data.sources || {}, changes: data.changes || null,
       collections: rated.collections, games: rated.games, example: Boolean(library.example),
     });
     $('web-intro').hidden = true;

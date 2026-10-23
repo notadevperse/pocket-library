@@ -63,7 +63,7 @@ If there are several numbered folders, use the newest.
 2. Pick your device type: recent Snapdragon, older Snapdragon, or not Snapdragon. Not sure? Find your model in **Settings → About phone**, then search for its name plus "chipset".
 3. Tap **Open my files** and pick `steam-games.json` and/or `steam-licenses.json`, plus your collections file if you want it. You can also drag the files onto the page.
 
-That's it. Next time you open the website, your library is still there. Open new files to update it, or tap **Save a copy of this page** to keep a file that works offline. The game data is refreshed once a month.
+That's it. Next time you open the website, your library is still there. Open new files to update it, or tap **Save a copy of this page** to keep a file that works offline. The game data is refreshed once a month, and games that changed in the latest data say what changed.
 
 To use your library on your phone too, open the files there (send them to yourself), or open the saved copy.
 
@@ -144,8 +144,9 @@ Best effort at the time of publishing. Specifically:
     - `make_bookmarks.py` turns the bookmark code into one line.
     - `make_web.py` makes the website, and `make_zip.py` makes the skill zip.
     - `check_apps.py` looks up the apps' latest releases.
+    - `changes.py` says in plain words what changed for each game in a refresh.
 - `tests/`: checks that run on every change (`python3 -m unittest discover tests`).
-- `.github/workflows/`: the check on every change, and the monthly data refresh, which re-downloads the public data, re-checks every game, updates the app versions, and opens a pull request to approve.
+- `.github/workflows/`: the check on every change, and the monthly data refresh, which re-downloads the public data, re-checks every game, notes what changed for each game, updates the app versions, and opens a pull request to approve.
 - [`CHANGELOG.md`](CHANGELOG.md): what changed in each version.
 
 No skill? Attach the files in `pocket-library/` to your chat along with your own files, and add "Follow SKILL.md."

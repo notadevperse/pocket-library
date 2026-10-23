@@ -16,6 +16,7 @@ KIT = os.path.join(ROOT, 'pocket-library')
 SCRIPTS = os.path.join(KIT, 'scripts')
 sys.path.insert(0, SCRIPTS)
 
+import changes  # noqa: E402
 import evidence  # noqa: E402
 import ratings as R  # noqa: E402
 
@@ -108,6 +109,36 @@ class Rules(unittest.TestCase):
         self.assertEqual(new['basis'], 'spga')
 
 
+class Changes(unittest.TestCase):
+    def test_notes_and_summary(self):
+        old = {'1': dict(R.blank('Alpha'), weight='light', gamenative='mixed'),
+               '2': dict(R.blank('Beta'), weight='medium', linux='works'),
+               '3': R.blank('Gone')}
+        new = {'1': dict(old['1'], gamenative='works', touch='t'),
+               '2': dict(old['2'], status='no', linux=''),
+               '4': R.blank('Fresh')}
+        with tempfile.TemporaryDirectory() as d:
+            paths = [os.path.join(d, n) for n in ('old.json', 'new.json', 'sum.md')]
+            R.save(paths[0], {}, old)
+            R.save(paths[1], {'updated': '2026-11-03'}, new)
+            run('changes.py', '--old', paths[0], '--new', paths[1], '--summary', paths[2], '--write')
+            meta, games = R.load(paths[1])
+            with open(paths[2], encoding='utf-8') as f:
+                text = f.read()
+        self.assertEqual(games, {k: R.normalize(v) for k, v in new.items()})
+        self.assertEqual(meta['changes'], {'since': '2026-11-03', 'games': {
+            '1': 'GameNative: works (was mixed)',
+            '2': 'Now Not on Android (was Medium); ProtonDB: no verdict now (was runs)',
+            '4': 'New to the list'}})
+        for line in ('**3 games changed.**', '**GameNative: better** (1): Alpha', '**Taken off the list** (1): Gone',
+                     '**Input label changed** (1): Alpha'):
+            self.assertIn(line, text)
+
+    def test_long_lists_are_cut_short(self):
+        sections = {'GameNative: better': [f'Game {i:02}' for i in range(20)]}
+        self.assertIn('Game 14, and 5 more', changes.summary({'x': ['y']}, sections))
+
+
 class Build(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.mkdtemp()
@@ -115,7 +146,8 @@ class Build(unittest.TestCase):
         ratings = {'620': dict(R.blank('Portal 2'), weight='light', touch='o', basis='spg', linux='works'),
                    '730': dict(R.blank('Counter-Strike 2'), status='no', note='Competitive online')}
         self.ratings = self.write('ratings.json', None)
-        R.save(self.ratings, {'sources': {'protondb': '2026-10-01'}}, ratings)
+        R.save(self.ratings, {'sources': {'protondb': '2026-10-01'},
+                              'changes': {'since': '2026-10-23', 'games': {'620': 'GameNative: works (was mixed)'}}}, ratings)
 
     def write(self, name, data):
         path = os.path.join(self.dir, name)
@@ -137,6 +169,7 @@ class Build(unittest.TestCase):
         self.assertEqual((by_id['620']['weight'], by_id['620']['hours'], by_id['620']['linux']), ('light', 2, 'works'))
         self.assertEqual(by_id['99']['weight'], 'unknown')
         self.assertEqual(data['sources'], {'protondb': '2026-10-01'})
+        self.assertEqual(data['changes']['games'], {'620': 'GameNative: works (was mixed)'})
 
     def test_licenses_only(self):
         lic = self.write('l.json', {'licenses': [{'name': 'Portal 2', 'date': '2022-03-21'}, {'name': 'Some Bundle', 'date': '2020-01-01'}]})
