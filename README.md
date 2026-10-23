@@ -19,7 +19,7 @@ Check which of your Steam games you can play on an Android phone or handheld (an
 
 ## 1. Get your games list (on a computer)
 
-Each option is a bookmark that works on a Steam page you already have open and saves a file to your Downloads. It sends nothing anywhere, and the file holds no account ID. Use option 1, option 2, or both: option 1 gives playtime, and option 2 adds the date you got each game. Option 3 adds your wishlist. The readable code for all three is in [`pocket-library/bookmarks/`](pocket-library/bookmarks).
+Each option is a bookmark that works on a Steam or GOG page you already have open and saves a file to your Downloads. It sends nothing anywhere, and the file holds no account ID. Use option 1, option 2, or both: option 1 gives playtime, and option 2 adds the date you got each game. Option 3 adds your wishlist, and option 4 your GOG games. The readable code for all four is in [`pocket-library/bookmarks/`](pocket-library/bookmarks).
 
 **Option 1: games and playtime.** Works on your own games page even if your profile is private.
 
@@ -63,6 +63,20 @@ javascript:(async () => { const help = 'Open store.steampowered.com while signed
 3. Open `store.steampowered.com` and sign in if asked.
 4. Click the bookmark. It saves `steam-wishlist.json`.
 
+**Option 4: your GOG games.** Adds the games in your GOG library, matched to Pocket Library's list by name and tagged GOG. A game you own on both stores shows once. DroidDeck and GameNative can run GOG games; GameHub Lite can't yet. It asks GOG for your own library, 100 games to a page, with a short pause between pages. GOG has no playtime to share, and games whose names don't match show as Unknown.
+
+1. Copy this code:
+
+<!-- bm-gog -->
+```
+javascript:(async () => { const help = 'Open www.gog.com while signed in to GOG, then click this bookmark again.'; const pauseMs = 400; const maxPages = 100; function save(fileName, data) { const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' })); link.download = fileName; document.body.appendChild(link); link.click(); link.remove(); } if (location.hostname !== 'www.gog.com') { alert(help); return; } let games = []; try { for (let page = 1; page <= maxPages; page++) { if (page > 1) { await new Promise(done => setTimeout(done, pauseMs)); } const response = await fetch('/account/getFilteredProducts?mediaType=1&page=' + page, { credentials: 'same-origin' }); const data = await response.json(); games = games.concat((data.products || []).map(p => ({ id: String(p.id), name: String(p.title || '') }))); if (!data.totalPages || page >= data.totalPages) { break; } } } catch (err) { alert(help); return; } if (!games.length) { alert('No GOG games found. Your library may be empty, or you may not be signed in. ' + help); return; } save('gog-games.json', { source: 'pocket-library', kind: 'gog', saved: new Date().toISOString(), games: games }); })();
+```
+<!-- /bm-gog -->
+
+2. Add it as a bookmark the same way, named **Get my GOG games**.
+3. Open `www.gog.com` and sign in if asked.
+4. Click the bookmark. It saves `gog-games.json`.
+
 **Optional: your Steam collections.** They're in a file called `cloud-storage-namespace-1.json` on the same computer:
 
 - Windows: `C:\Program Files (x86)\Steam\userdata\<number>\config\cloudstorage\`
@@ -75,7 +89,7 @@ If there are several numbered folders, use the newest.
 
 1. Go to [notadevperse.github.io/pocket-library](https://notadevperse.github.io/pocket-library/).
 2. Pick your device type: recent Snapdragon, older Snapdragon, or not Snapdragon. Not sure? Find your model in **Settings → About phone**, then search for its name plus "chipset".
-3. Tap **Open my files** and pick `steam-games.json` and/or `steam-licenses.json`, plus your collections and wishlist files if you want them. With a wishlist, **My games** and **Wishlist** at the top switch between the two. You can also drag the files onto the page.
+3. Tap **Open my files** and pick `steam-games.json` and/or `steam-licenses.json`, plus your collections, wishlist, and GOG files if you want them. With a wishlist, **My games** and **Wishlist** at the top switch between the two. You can also drag the files onto the page.
 
 That's it. Next time you open the website, your library is still there. Open new files to update it, or tap **Save a copy of this page** to keep a file that works offline. The game data is refreshed once a month, and games that changed in the latest data say what changed.
 
@@ -151,7 +165,7 @@ Best effort at the time of publishing. Specifically:
   - `ratings.json`: the 11,064 starting entries. The format is described at the top of `scripts/ratings.py`.
   - `example-library.json`: the example library, about 100 well-known games with made-up playtime, plus a short wishlist.
   - `apps.json`: the three apps' latest versions.
-  - `bookmarks/`: readable code for the three bookmarks.
+  - `bookmarks/`: readable code for the four bookmarks.
   - `scripts/`:
     - `build.py` fills the page.
     - `fetch-sources.sh` downloads the public data, and `evidence.py` checks games against it.

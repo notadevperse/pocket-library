@@ -202,6 +202,25 @@ class Build(unittest.TestCase):
         run('build.py', '--page', os.path.join(self.dir, 'page.html'), '--out', again, '--ratings', self.ratings)
         self.assertEqual(len(read_page(again)['wish']), 2)
 
+    def test_gog(self):
+        games = self.write('g.json', {'games': [{'appid': 620, 'name': 'Portal 2', 'minutes': 0}]})
+        gog = self.write('gog.json', {'kind': 'gog', 'games': [{'id': '1', 'name': 'Portal 2'}, {'id': '9', 'name': 'Only On GOG'}]})
+        data = self.build('--games', games, '--gog', gog)
+        by_id = {g['appid']: g for g in data['games']}
+        self.assertEqual(sorted(by_id), ['620', 'gog-9'])
+        self.assertEqual((by_id['620']['collections'], 'store' in by_id['620']), (['GOG'], False))
+        self.assertEqual((by_id['gog-9']['store'], by_id['gog-9']['weight']), ('gog', 'unknown'))
+        self.assertIn('GOG', data['collections'])
+        again = os.path.join(self.dir, 'again.html')  # a fresh Steam list keeps the GOG games
+        run('build.py', '--page', os.path.join(self.dir, 'page.html'), '--out', again, '--ratings', self.ratings, '--games', games)
+        self.assertEqual(sorted(g['appid'] for g in read_page(again)['games']), ['620', 'gog-9'])
+
+    def test_gog_editions(self):
+        import build
+        self.assertEqual(build.without_edition('The Witcher 3: Wild Hunt - Game of the Year Edition'), 'thewitcher3wildhunt')
+        self.assertEqual(build.without_edition('Marigold'), 'marigold')
+        self.assertEqual(build.without_edition('Fallout: New Vegas Ultimate Edition'), 'falloutnewvegas')
+
     def test_licenses_only(self):
         lic = self.write('l.json', {'licenses': [{'name': 'Portal 2', 'date': '2022-03-21'}, {'name': 'Some Bundle', 'date': '2020-01-01'}]})
         data = self.build('--licenses', lic)
@@ -276,6 +295,20 @@ assert.strictEqual(gamesFrom({ response: { games: [{ appid: 620, playtime_foreve
 // Wishlist: rated by app ID, games already owned left out, unknown ones still listed
 const wish = rateWishlist(wishlistFrom({ wishlist: ['620', 730, '730', '555'] }), ratings, [{ appid: '620' }]);
 assert.deepStrictEqual(wish.map(g => [g.appid, g.status, g.name]), [['730', 'no', 'Counter-Strike 2'], ['555', '', 'App 555']]);
+
+// GOG: matched by name, a game owned on both stores shows once, all tagged GOG
+assert.strictEqual(fileKind({ kind: 'gog', games: [] }), 'gog');
+const gog = gogFrom({ games: [{ id: 1, name: 'PORTAL 2' }, { id: 2, name: 'Counter-Strike 2' }, { id: 3, name: 'Only On GOG' }] });
+out = byId(rateLibrary({ games: gamesFrom({ games: [{ appid: 620, name: 'Portal 2', minutes: 60 }] }), licenses: null, collections: null, gog }, ratings).games);
+assert.deepStrictEqual(Object.keys(out).sort(), ['620', '730', 'gog-3']);
+assert.deepStrictEqual([out['620'].hours, out['620'].store, out['620'].collections], [1, undefined, ['GOG']]);
+assert.deepStrictEqual([out['730'].status, out['730'].store], ['no', 'gog']);
+assert.deepStrictEqual([out['gog-3'].weight, out['gog-3'].name, out['gog-3'].store], ['unknown', 'Only On GOG', 'gog']);
+
+// GOG names without the edition still match; a word that only ends like one doesn't lose it
+assert.strictEqual(withoutEdition('The Witcher 3: Wild Hunt — Remastered'), withoutEdition('The Witcher 3: Wild Hunt'));
+assert.strictEqual(withoutEdition('Deus Ex: Game of the Year Edition'), 'deusex');
+assert.strictEqual(withoutEdition('Marigold'), 'marigold');
 
 // Licenses only: matched to app IDs by name; bundles are left out and counted
 let result = rateLibrary({ games: null, licenses: licensesFrom({ licenses: [

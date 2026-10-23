@@ -16,7 +16,7 @@ import sys
 KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 README = os.path.join(os.path.dirname(KIT), 'README.md')
 TEMPLATE = os.path.join(KIT, 'template.html')
-BOOKMARKS = {'bm-games': 'steam-games.js', 'bm-licenses': 'steam-licenses.js', 'bm-wishlist': 'steam-wishlist.js'}
+BOOKMARKS = {'bm-games': 'steam-games.js', 'bm-licenses': 'steam-licenses.js', 'bm-wishlist': 'steam-wishlist.js', 'bm-gog': 'gog-games.js'}
 
 
 def bookmark_code(source):
