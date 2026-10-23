@@ -75,6 +75,8 @@ header.deck .wrap { padding-block: 12px 10px; display: grid; gap: 10px; }
 #colls .chip[aria-pressed="true"] { border-color: var(--fg); background: var(--fg); color: var(--surface); }
 #colls .chip[aria-pressed="true"] .n { color: var(--surface); }
 .tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.viewseg { margin-top: 10px; }
+.viewseg .n { opacity: .7; margin-left: 4px; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-wrap: wrap; }
 .seg button { font: 500 0.78rem var(--body); border: 0; background: transparent; color: var(--muted); padding: 6px 10px; cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--fg); color: var(--surface); }
@@ -178,6 +180,8 @@ li.g .body { padding: 10px 12px; min-width: 0; display: grid; gap: 4px; }
 .note { font-size: 0.82rem; color: var(--muted); }
 .heads { font-size: 0.8rem; color: var(--heavy); }
 .heads::before { content: "Heads-up: "; font-weight: 600; }
+.changed { font-size: 0.8rem; color: var(--muted); }
+.changed b { font-weight: 600; color: var(--accent); }
 .tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .tag { font-size: 0.72rem; padding: 1px 7px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); }
 .empty { padding: 28px 16px; text-align: center; color: var(--muted); }
@@ -201,6 +205,10 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     <div class="titlerow">
       <h1>Pocket Library</h1>
       <span class="sub" id="sub"></span>
+    </div>
+    <div class="seg viewseg" id="viewseg" role="group" aria-label="Show" hidden>
+      <button type="button" data-view="owned" aria-pressed="true">My games <span class="n" id="owned-n"></span></button>
+      <button type="button" data-view="wish" aria-pressed="false">Wishlist <span class="n" id="wish-n"></span></button>
     </div>
     <div class="meter" id="meter" aria-hidden="true"></div>
     <div class="search">
@@ -229,6 +237,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       <div class="seg" role="group" aria-label="Reports">
         <button type="button" data-reports="all" aria-pressed="true">All reports</button>
         <button type="button" data-reports="clean" aria-pressed="false">No problems reported</button>
+        <button type="button" data-reports="changed" aria-pressed="false" id="reports-changed" hidden>Changed lately</button>
       </div>
     </div>
     </div>
@@ -256,7 +265,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       </div>
       <div class="option">
         <b class="title">2. Your games</b>
-        <p>Open <code>steam-games.json</code> or <code>steam-licenses.json</code> (or both), and your collections file if you want it. The steps under <b>Get your games list</b> below make them. You can also drop the files onto this page.</p>
+        <p>Open <code>steam-games.json</code> or <code>steam-licenses.json</code> (or both), and your collections, wishlist, and GOG files if you want them. The steps under <b>Get your games list</b> below make them. You can also drop the files onto this page.</p>
         <div class="btnrow">
           <button class="btn primary" type="button" data-open-files>Open my files</button>
           <button class="btn" type="button" data-example>Try an example library</button>
@@ -270,7 +279,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
 
     <details class="card" id="getlist">
       <summary>Get your games list</summary>
-      <p>Do this once on a computer, in Chrome or Edge. Each option is a bookmark that reads a Steam page you already have open and saves a file to your Downloads. Nothing is sent anywhere. Use one or both.</p>
+      <p>Do this once on a computer, in Chrome or Edge. Each option is a bookmark that works on a Steam or GOG page you already have open and saves a file to your Downloads. Nothing is sent anywhere. Use option 1, option 2, or both; option 3 adds your wishlist, and option 4 your GOG games.</p>
       <div class="option">
         <b class="title">Option 1: games and playtime</b>
         <p>Gives every game with your playtime. Needs your Steam games page, which works for your own account even if it's private.</p>
@@ -293,6 +302,30 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
           <li>Add it as a bookmark the same way, named <b>Get my Steam licenses</b>.</li>
           <li>Open <span class="path">store.steampowered.com/account/licenses/</span> and sign in if asked.</li>
           <li>Click the bookmark. It saves <code>steam-licenses.json</code>.</li>
+        </ol>
+      </div>
+      <div class="option">
+        <b class="title">Option 3: your wishlist</b>
+        <p>Shows which games on your Steam wishlist could run on your device, before you buy them. Open it with your games file, or on its own. The file holds only the games' Steam numbers; games outside Pocket Library's list show as Unknown.</p>
+        <ol class="steps">
+          <li>Copy this code:
+            <textarea id="bm-wishlist" class="codebox" readonly rows="4" aria-label="Bookmark code, option 3">javascript:(async () =&gt; { const help = &#x27;Open store.steampowered.com while signed in to Steam, then click this bookmark again.&#x27;; function save(fileName, data) { const link = document.createElement(&#x27;a&#x27;); link.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: &#x27;application/json&#x27; })); link.download = fileName; document.body.appendChild(link); link.click(); link.remove(); } try { if (location.hostname !== &#x27;store.steampowered.com&#x27;) { throw new Error(&#x27;not on the store&#x27;); } const response = await fetch(&#x27;/dynamicstore/userdata/&#x27;, { credentials: &#x27;same-origin&#x27;, cache: &#x27;no-store&#x27; }); const data = await response.json(); const wishlist = [...new Set((data.rgWishlist || []).map(String))]; if (!wishlist.length) { alert(&#x27;No wishlist found. Your wishlist may be empty, or you may not be signed in. &#x27; + help); return; } save(&#x27;steam-wishlist.json&#x27;, { source: &#x27;pocket-library&#x27;, kind: &#x27;wishlist&#x27;, saved: new Date().toISOString(), wishlist: wishlist }); } catch (err) { alert(help); } })();</textarea>
+            <div class="btnrow"><button class="btn" type="button" data-copy="bm-wishlist">Copy code</button><span class="status" data-copied="bm-wishlist"></span></div></li>
+          <li>Add it as a bookmark the same way, named <b>Get my Steam wishlist</b>.</li>
+          <li>Open <span class="path">store.steampowered.com</span> and sign in if asked.</li>
+          <li>Click the bookmark. It saves <code>steam-wishlist.json</code>.</li>
+        </ol>
+      </div>
+      <div class="option">
+        <b class="title">Option 4: your GOG games</b>
+        <p>Adds the games in your GOG library, matched to Pocket Library's list by name and tagged GOG. A game you own on both stores shows once. DroidDeck and GameNative can sign in to GOG and load your library. GameHub Lite's GOG support isn't documented, so it isn't suggested for games you own only on GOG. GOG has no playtime to share, and games whose names don't match show as Unknown.</p>
+        <ol class="steps">
+          <li>Copy this code:
+            <textarea id="bm-gog" class="codebox" readonly rows="4" aria-label="Bookmark code, option 4">javascript:(async () =&gt; { const help = &#x27;Open www.gog.com while signed in to GOG, then click this bookmark again.&#x27;; const pauseMs = 400; const maxPages = 100; function save(fileName, data) { const link = document.createElement(&#x27;a&#x27;); link.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: &#x27;application/json&#x27; })); link.download = fileName; document.body.appendChild(link); link.click(); link.remove(); } if (location.hostname !== &#x27;www.gog.com&#x27;) { alert(help); return; } let games = []; try { for (let page = 1; page &lt;= maxPages; page++) { if (page &gt; 1) { await new Promise(done =&gt; setTimeout(done, pauseMs)); } const response = await fetch(&#x27;/account/getFilteredProducts?mediaType=1&amp;page=&#x27; + page, { credentials: &#x27;same-origin&#x27; }); const data = await response.json(); games = games.concat((data.products || []).map(p =&gt; ({ id: String(p.id), name: String(p.title || &#x27;&#x27;) }))); if (!data.totalPages || page &gt;= data.totalPages) { break; } } } catch (err) { alert(help); return; } if (!games.length) { alert(&#x27;No GOG games found. Your library may be empty, or you may not be signed in. &#x27; + help); return; } save(&#x27;gog-games.json&#x27;, { source: &#x27;pocket-library&#x27;, kind: &#x27;gog&#x27;, saved: new Date().toISOString(), games: games }); })();</textarea>
+            <div class="btnrow"><button class="btn" type="button" data-copy="bm-gog">Copy code</button><span class="status" data-copied="bm-gog"></span></div></li>
+          <li>Add it as a bookmark the same way, named <b>Get my GOG games</b>.</li>
+          <li>Open <span class="path">www.gog.com</span> and sign in if asked.</li>
+          <li>Click the bookmark. It saves <code>gog-games.json</code>.</li>
         </ol>
       </div>
       <p class="status">Collections are optional: they're in <code>cloud-storage-namespace-1.json</code> in your Steam folder, under <span class="path">userdata\<i>your number</i>\config\cloudstorage</span>.</p>
@@ -354,15 +387,16 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       </ul>
       <h2>The rest</h2>
       <ul>
-        <li><b>Touch / Touch OK / Controller</b>: how well it plays without a gamepad. A note, not a rule.</li>
+        <li><b>Touch / Touch OK / Controller</b>: how well it plays without a gamepad. A note, not a rule. Where the Steam Games Dataset has the game, it comes from whether the game supports a controller and from its player tags.</li>
         <li><b>Heads-up</b>: an extra hurdle, like a publisher launcher (EA, Ubisoft, Rockstar).</li>
+        <li><b>Changed</b>: what changed for the game in the latest monthly data, such as a new GameNative verdict. "Changed lately" under Filters shows only those games.</li>
         <li><b>Based on</b>: the data behind the entry: Steam's minimum requirements, ProtonDB, GameNative, the anti-cheat list, or a check by hand. "Estimate only" means there was no data.</li>
       </ul>
       <p class="status">Best effort at the time of publishing. Nothing here is a test result, and some entries will be wrong.</p>
     </details>
 
     <div id="out"></div>
-    <footer id="foot">Pocket Library by <a href="https://github.com/notadevperse/pocket-library" target="_blank" rel="noopener">notadevperse</a>. Best effort; entries may be wrong. Not affiliated with Valve, Steam, or any of the apps listed. Data from <a href="https://www.protondb.com" target="_blank" rel="noopener">ProtonDB</a> (ODbL), <a href="https://github.com/GameNative/gamenative-compat" target="_blank" rel="noopener">GameNative</a>, <a href="https://pcgamebenchmarks.com" target="_blank" rel="noopener">PCGameBenchmarks</a> (CC BY 4.0), and <a href="https://areweanticheatyet.com" target="_blank" rel="noopener">AreWeAntiCheatYet</a> (MIT). Thank you to everyone who contributes to them.<span id="foot-web"></span></footer>
+    <footer id="foot">Pocket Library by <a href="https://github.com/notadevperse/pocket-library" target="_blank" rel="noopener">notadevperse</a>. Best effort; entries may be wrong. Not affiliated with Valve, Steam, or any of the apps listed. Data from <a href="https://www.protondb.com" target="_blank" rel="noopener">ProtonDB</a> (ODbL), <a href="https://github.com/GameNative/gamenative-compat" target="_blank" rel="noopener">GameNative</a>, <a href="https://pcgamebenchmarks.com" target="_blank" rel="noopener">PCGameBenchmarks</a> (CC BY 4.0), and <a href="https://areweanticheatyet.com" target="_blank" rel="noopener">AreWeAntiCheatYet</a> (MIT), and the <a href="https://huggingface.co/datasets/FronkonGames/steam-games-dataset" target="_blank" rel="noopener">Steam Games Dataset</a> (MIT). Thank you to everyone who contributes to them.<span id="foot-web"></span></footer>
   </div>
 </main>
 
@@ -422,6 +456,8 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
   };
   const ONE_STEP_HEAVIER = { medium: 'heavy', heavy: 'no' };
   const APP_FOR_STATUS = { android: 'Google Play version', no: 'PC or cloud' };
+  // GOG games: DroidDeck and GameNative load GOG libraries; GameHub Lite's GOG support isn't documented.
+  const GOG_APPS = { full: 'DroidDeck – GameNative', limited: 'GameNative', other: 'GameNative' };
   const TOUCH_LABEL = { t: 'Touch', o: 'Touch OK', c: 'Controller' };
   const REPORTS = {
     linux: { label: 'ProtonDB', works: ['runs', 'ok'], mixed: ['mixed', 'mid'], fails: ['fails', 'bad'] },
@@ -451,6 +487,8 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       return raw.some(row => Array.isArray(row) && String(row[0]).startsWith('user-collections.')) ? 'collections' : '';
     }
     if (!raw || typeof raw !== 'object') return '';
+    if (raw.kind === 'gog') return 'gog';
+    if (raw.kind === 'wishlist' || Array.isArray(raw.wishlist)) return 'wishlist';
     if (raw.kind === 'licenses' || Array.isArray(raw.licenses)) return 'licenses';
     if (raw.kind === 'games' || Array.isArray(raw.games) || (raw.response && Array.isArray(raw.response.games))) return 'games';
     return '';
@@ -463,6 +501,14 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       name: String(row.name || ''),
       minutes: Number(row.minutes != null ? row.minutes : row.playtime_forever) || 0,
     }));
+  }
+
+  function gogFrom(raw) {
+    return (raw.games || []).filter(g => g && g.id != null && g.name).map(g => ({ id: String(g.id), name: String(g.name) }));
+  }
+
+  function wishlistFrom(raw) {
+    return [...new Set(raw.wishlist.filter(app => app != null).map(String))];
   }
 
   function licensesFrom(raw) {
@@ -483,7 +529,30 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     return out;
   }
 
-  // library: {games, licenses, collections}, any of them null. ratings: ratings.json's "games".
+  // Simplified name -> app ID for every game in the list (the first one wins).
+  function nameIndex(base) {
+    const known = {};
+    Object.keys(base).forEach(app => { const key = simpleName(base[app].name); if (!(key in known)) known[key] = app; });
+    return known;
+  }
+
+  // Stores name editions differently ("Wild Hunt" on GOG, "Wild Hunt — Remastered" on Steam),
+  // so GOG games that don't match exactly are matched again without the edition or a closing
+  // note in brackets, like "(1994)" or "(Classic)".
+  const EDITION = /\s*[-–—:(]?\s*\b(game of the year|goty|definitive|enhanced|complete|remastered|director'?s cut|deluxe|gold|ultimate|anniversary|special|collector'?s|digital|standard)( edition)?\)?\s*$/i;
+  function withoutEdition(name) {
+    let out = String(name || '').replace(/[™®]/g, '').trim();
+    for (let before = ''; before !== out;) { before = out; out = out.replace(/\s*\([^)]*\)\s*$/, '').replace(EDITION, '').replace(/\s*[-–—:]?\s*\bedition\s*$/i, '').trim(); }
+    return simpleName(out);
+  }
+
+  function editionIndex(base) {
+    const known = {};
+    Object.keys(base).forEach(app => { const key = withoutEdition(base[app].name); if (key && !(key in known)) known[key] = app; });
+    return known;
+  }
+
+  // library: {games, licenses, collections, gog}, any of them null. ratings: ratings.json's "games".
   // Returns {games, collections, unmatched} with games in the page's format.
   function rateLibrary(library, ratings) {
     const base = ratings || {};
@@ -508,8 +577,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
           else if (!row.added || lic.date < row.added) row.added = lic.date;
         });
       } else {
-        const known = {};
-        Object.keys(base).forEach(app => { const key = simpleName(base[app].name); if (!(key in known)) known[key] = app; });
+        const known = nameIndex(base);
         const made = {};
         library.licenses.forEach(lic => {
           const app = known[simpleName(lic.name)];
@@ -519,18 +587,44 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
         rows = Object.values(made);
       }
     }
+    // GOG games: matched to the list by name. A game also owned on Steam shows once, tagged GOG.
+    const onGog = new Set();
+    if (library.gog) {
+      rows = rows || [];
+      const known = nameIndex(base);
+      const loose = editionIndex(base);
+      const listed = new Set(rows.map(row => String(row.appid)));
+      library.gog.forEach(g => {
+        const appid = known[simpleName(g.name)] || loose[withoutEdition(g.name)] || 'gog-' + g.id;
+        onGog.add(appid);
+        if (listed.has(appid)) return;
+        listed.add(appid);
+        rows.push({ appid, name: g.name, hours: 0, added: '', store: 'gog' });
+      });
+    }
     const byApp = {};
     const collections = Object.keys(library.collections || {});
     collections.forEach(name => library.collections[name].forEach(app => { (byApp[app] = byApp[app] || []).push(name); }));
+    if (onGog.size) {
+      collections.push('GOG');
+      onGog.forEach(app => { (byApp[app] = byApp[app] || []).push('GOG'); });
+    }
     const games = (rows || []).map(row => {
       const entry = blankEntry();
       const rated = base[row.appid];
       if (rated) FIELDS.forEach(k => { if (rated[k] != null) entry[k] = rated[k]; });
       const name = row.name || entry.name || 'App ' + row.appid;
       return Object.assign({ appid: row.appid, hours: row.hours, added: row.added,
-        collections: [...new Set(byApp[row.appid] || [])].sort() }, entry, { name });
+        collections: [...new Set(byApp[row.appid] || [])].sort() }, entry, { name }, row.store ? { store: row.store } : {});
     });
     return { games, collections, unmatched };
+  }
+
+  // Wishlisted games, rated like owned ones, leaving out any already in the library.
+  function rateWishlist(wishlist, ratings, owned) {
+    const have = new Set((owned || []).map(g => String(g.appid)));
+    const rows = (wishlist || []).filter(app => !have.has(String(app))).map(app => ({ appid: String(app), name: '', minutes: 0 }));
+    return rateLibrary({ games: rows, licenses: null, collections: null }, ratings).games;
   }
   // ---- matching: end --------------------------------------------------------------
 
@@ -540,6 +634,8 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
   let counts = {};
   let presentGroups = [];
   let hasDates = false;
+  let hasChanges = false;
+  let hasWish = false;
   let collectionNames = [];
 
   // ---- always-on parts of the page ---------------------------------------------
@@ -609,8 +705,10 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       note: game.note || '',
       heads: game.heads || '',
       basis: String(game.basis || ''),
+      store: game.store === 'gog' ? 'gog' : '',
       reports,
       problem: reports.some(([k, v]) => REPORTS[k][v][1] === 'bad'),
+      change: String(((DATA.changes || {}).games || {})[game.appid] || ''),
       collections,
       searchText: (game.name + ' ' + collections.join(' ')).toLowerCase(),
     };
@@ -626,16 +724,21 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     DATA = data;
     device = DEVICE_CLASSES[DATA.gpuClass] || DEVICE_CLASSES.full;
     deviceName = DATA.device || DATA.phone || '';  // "phone" in pages made before format 2
-    items = (Array.isArray(DATA.games) ? DATA.games : []).map(toItem);
+    const owned = Array.isArray(DATA.games) ? DATA.games : [];
+    hasWish = Array.isArray(DATA.wish) && DATA.wish.length > 0;
+    if (!hasWish || !owned.length) state.view = hasWish ? 'wish' : 'owned';
+    items = (state.view === 'wish' ? DATA.wish : owned).map(toItem);
     counts = {};
     items.forEach(x => { counts[x.group] = (counts[x.group] || 0) + 1; });
     presentGroups = GROUPS.map(([key]) => key).filter(key => counts[key]);
     hasDates = items.some(x => x.added);
+    hasChanges = items.some(x => x.change);
     collectionNames = [...new Set(items.flatMap(x => x.collections))]
       .sort((a, b) => collectionRank(a) - collectionRank(b) || a.localeCompare(b));
     if (![...state.groups].some(k => counts[k])) state.groups = new Set(presentGroups.filter(k => k !== 'other' && k !== 'no'));
     if (state.collection !== 'all' && state.collection !== '__none' && !collectionNames.includes(state.collection)) state.collection = 'all';
     if (state.sort === 'new' && !hasDates) state.sort = 'weight';
+    if (state.reports === 'changed' && !hasChanges) state.reports = 'all';
     state.limit = PAGE_SIZE;
   }
 
@@ -646,6 +749,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     const saved = JSON.parse(localStorage.getItem(VIEW_KEY) || 'null');
     if (saved) Object.assign(state, saved, { groups: new Set(saved.groups) });
   } catch (err) { /* storage can be unavailable; defaults are fine */ }
+  state.view = 'owned';  // My games or Wishlist; always starts on My games
 
   function saveView() {
     try {
@@ -656,20 +760,30 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
 
   // ---- the deck --------------------------------------------------------------------
 
+  function monthOf(iso) {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}/.test(iso)) return iso || '';
+    const [y, m] = iso.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
+  }
+
   function newestDataDate() {
     const dates = Object.values(DATA.sources || {}).filter(Boolean).sort();
-    const latest = dates[dates.length - 1] || DATA.updated;
-    if (!latest || !/^\d{4}-\d{2}-\d{2}/.test(latest)) return latest || '';
-    const [y, m] = latest.split('-').map(Number);
-    return new Date(y, m - 1, 1).toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
+    return monthOf(dates[dates.length - 1] || DATA.updated);
   }
 
   function renderDeck() {
     $('deck').hidden = false;
     $('intro').hidden = true;
     $('sort-new').hidden = !hasDates;
+    $('reports-changed').hidden = !hasChanges;
     const asOf = newestDataDate();
-    $('sub').textContent = (DATA.example ? 'Example · ' : '') + `${items.length.toLocaleString()} games`
+    const owned = Array.isArray(DATA.games) ? DATA.games.length : 0;
+    $('viewseg').hidden = !(hasWish && owned);
+    $('owned-n').textContent = owned.toLocaleString();
+    $('wish-n').textContent = hasWish ? DATA.wish.length.toLocaleString() : '';
+    document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', b.dataset.view === state.view));
+    $('q').placeholder = state.view === 'wish' ? 'Search your wishlist' : 'Search your games';
+    $('sub').textContent = (DATA.example ? 'Example · ' : '') + (state.view === 'wish' ? 'Wishlist · ' : '') + `${items.length.toLocaleString()} games`
       + (asOf ? ` · best effort, data as of ${asOf}` : '');
     const listed = items.filter(x => x.group !== 'other').length || 1;
     $('meter').innerHTML = ['light', 'medium', 'heavy', 'android', 'unknown', 'no']
@@ -703,7 +817,9 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
   }
 
   function rowHtml(x) {
-    const app = APP_FOR_STATUS[x.group] || device.app[x.group] || '';
+    const gogApps = GOG_APPS[DATA.gpuClass] || GOG_APPS.full;
+    const app = APP_FOR_STATUS[x.group]
+      || (x.store === 'gog' && device.app[x.group] ? (x.group === 'heavy' ? gogApps + ' · 720p + FSR' : gogApps) : device.app[x.group]) || '';
     const meta = [
       `<span class="pill">${GROUP_LABEL[x.group]}</span>`,
       x.touch ? `<span class="input i-${x.touch}">${TOUCH_LABEL[x.touch]}</span>` : '',
@@ -725,6 +841,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       + (x.heavierForDevice ? '<div class="note">Shown one step heavier for this device.</div>' : '')
       + (x.note ? `<div class="note">${esc(x.note)}</div>` : '')
       + (x.heads ? `<div class="heads">${esc(x.heads)}</div>` : '')
+      + (x.change ? `<div class="changed"><b>Changed in the ${esc(monthOf((DATA.changes || {}).since))} data:</b> ${esc(x.change)}</div>` : '')
       + basis
       + '</div></li>';
   }
@@ -733,7 +850,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     const q = state.query.trim().toLowerCase();
     if (q) return items.filter(x => x.searchText.includes(q));
     const inputOk = x => state.input === 'all' || (state.input === 'touch' ? x.touch === 't' : x.touch === 't' || x.touch === 'o');
-    const reportsOk = x => state.reports === 'all' || !x.problem;
+    const reportsOk = x => state.reports === 'all' || (state.reports === 'changed' ? Boolean(x.change) : !x.problem);
     const collectionOk = x => state.collection === 'all'
       || (state.collection === '__none' ? !x.collections.length : x.collections.includes(state.collection));
     return items.filter(x => state.groups.has(x.group) && inputOk(x) && reportsOk(x) && collectionOk(x));
@@ -751,7 +868,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     const on = [];
     if (state.collection !== 'all') on.push(state.collection === '__none' ? 'No collection' : state.collection);
     if (state.input !== 'all') on.push(state.input === 'touch' ? 'Touch' : 'Touch + OK');
-    if (state.reports !== 'all') on.push('No problems');
+    if (state.reports !== 'all') on.push(state.reports === 'changed' ? 'Changed lately' : 'No problems');
     const badge = on.length === 1 ? esc(on[0]) : on.length + ' on';
     $('fbtn').innerHTML = 'Filters' + (on.length ? `<span class="on">${badge}</span>` : '');
   }
@@ -839,6 +956,14 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
   document.querySelectorAll('[data-sort]').forEach(b => { b.onclick = () => { state.sort = b.dataset.sort; changed(); }; });
   document.querySelectorAll('[data-input]').forEach(b => { b.onclick = () => { state.input = b.dataset.input; changed(); }; });
   document.querySelectorAll('[data-reports]').forEach(b => { b.onclick = () => { state.reports = b.dataset.reports; changed(); }; });
+  document.querySelectorAll('[data-view]').forEach(b => {
+    b.onclick = () => {
+      if (state.view === b.dataset.view) return;
+      state.view = b.dataset.view;
+      useData(DATA);
+      show();
+    };
+  });
 
   $('fbtn').addEventListener('click', () => {
     const open = $('deck').classList.toggle('open');
@@ -936,19 +1061,21 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     $('device').hidden = true;  // the web version shows the device inside "Your library"
     if (!library) { box.hidden = true; box.innerHTML = ''; return; }
     const n = rated.games.length;
+    const wished = (DATA.wish || []).length;
     const d = DEVICE_CLASSES[chosen.gpuClass];
     const devLabel = d ? `${esc(chosen.name || d.title)} · ${d.label}` : 'device not set';
     const notice = library.example
-      ? '<div class="notice"><b>Example library.</b> About 100 well-known games with made-up playtime, dates, and collections, to show how the page works. These aren\'t anyone\'s real games.'
+      ? '<div class="notice"><b>Example library.</b> About 100 well-known games with made-up playtime, dates, collections, and wishlist, to show how the page works. These aren\'t anyone\'s real games.'
         + '<div class="btnrow" style="margin-top:8px"><button class="btn primary" type="button" data-open-files>Use my own games</button><button class="btn" type="button" data-forget>Back</button></div></div>'
       : '';
     const about = library.example ? ''
-      : `<p>${n.toLocaleString()} games from ${esc(library.files.join(', '))}. Read on this device only, and remembered in this browser until you forget them.`
+      : `<p>${n.toLocaleString()} games${wished ? ` and ${wished.toLocaleString()} more on your wishlist` : ''} from ${esc(library.files.join(', '))}. Read on this device only, and remembered in this browser until you forget them.`
         + (rated.unmatched.length ? ` ${rated.unmatched.length.toLocaleString()} license${rated.unmatched.length === 1 ? '' : 's'} matched no game (bundles, extras, or games not in the list) and ${rated.unmatched.length === 1 ? 'was' : 'were'} left out.` : '')
         + '</p>';
     const actions = library.example ? ''
       : '<div class="btnrow"><button class="btn" type="button" data-open-files>Add or replace files</button><button class="btn" type="button" data-save>Save a copy of this page</button><button class="btn" type="button" data-forget>Forget my library</button></div>';
-    const title = library.example ? 'Device' : `Your library · ${n.toLocaleString()} games`;
+    const title = library.example ? 'Device'
+      : n || !wished ? `Your library · ${n.toLocaleString()} games` : `Your wishlist · ${wished.toLocaleString()} games`;
     box.hidden = false;
     box.innerHTML = notice
       + `<details class="card"${d || library.example ? '' : ' open'}><summary>${title} <span class="sumdev">· ${devLabel}</span></summary>`
@@ -978,8 +1105,9 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     rated = rateLibrary(library, data.games || {});
     const filled = Object.assign({}, BASE, {
       device: chosen.name, gpuClass: chosen.gpuClass || 'full', chip: '', gpu: '',
-      updated: data.updated || '', sources: data.sources || {},
+      updated: data.updated || '', sources: data.sources || {}, changes: data.changes || null,
       collections: rated.collections, games: rated.games, example: Boolean(library.example),
+      wish: rateWishlist(library.wishlist, data.games || {}, rated.games),
     });
     $('web-intro').hidden = true;
     $('getlist').open = false;
@@ -991,8 +1119,8 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
   }
 
   async function readFiles(files) {
-    const found = { games: null, licenses: null, collections: null };
-    const names = { games: '', licenses: '', collections: '' };
+    const found = { games: null, licenses: null, collections: null, wishlist: null, gog: null };
+    const names = { games: '', licenses: '', collections: '', wishlist: '', gog: '' };
     const problems = [];
     for (const file of files) {
       let raw;
@@ -1006,21 +1134,25 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       if (kind === 'games') found.games = gamesFrom(raw);
       else if (kind === 'licenses') found.licenses = licensesFrom(raw);
       else if (kind === 'collections') found.collections = collectionsFrom(raw);
-      else { problems.push(`${file.name} isn't a Steam games, licenses, or collections file`); continue; }
+      else if (kind === 'wishlist') found.wishlist = wishlistFrom(raw);
+      else if (kind === 'gog') found.gog = gogFrom(raw);
+      else { problems.push(`${file.name} isn't a Steam games, licenses, collections, or wishlist file, or a GOG games file`); continue; }
       names[kind] = file.name;
     }
-    if (!found.games && !found.licenses && !found.collections) {
+    if (!found.games && !found.licenses && !found.collections && !found.wishlist && !found.gog) {
       setStatus(problems.length ? `Nothing read: ${problems.join('; ')}.` : 'No files chosen.');
       return;
     }
-    const keep = library && !library.example ? library : { games: null, licenses: null, collections: null, fileNames: {} };
+    const keep = library && !library.example ? library : { games: null, licenses: null, collections: null, wishlist: null, gog: null, fileNames: {} };
     const fileNames = Object.assign({}, keep.fileNames || {});
     Object.keys(found).forEach(k => { if (found[k]) { keep[k] = found[k]; fileNames[k] = names[k]; } });
-    if (!keep.games && !keep.licenses) {
+    if (!keep.games && !keep.licenses && !keep.wishlist && !keep.gog) {
       setStatus(`Read ${names.collections}. Now open steam-games.json or steam-licenses.json too: collections alone have no games.`);
       return;
     }
-    library = { games: keep.games, licenses: keep.licenses, collections: keep.collections, fileNames,
+    if (found.wishlist) state.view = 'wish';
+    else if (found.games || found.licenses || found.gog) state.view = 'owned';
+    library = { games: keep.games, licenses: keep.licenses, collections: keep.collections, wishlist: keep.wishlist || null, gog: keep.gog || null, fileNames,
       files: Object.values(fileNames).filter(Boolean), example: false };
     store();
     await rebuild();
@@ -1032,7 +1164,8 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     if (button) button.disabled = true;
     try {
       const example = await getJson(BASE.exampleUrl);
-      library = { games: gamesFrom(example), licenses: licensesFrom(example), collections: example.collections, files: [], example: true };
+      library = { games: gamesFrom(example), licenses: licensesFrom(example), collections: example.collections,
+        wishlist: Array.isArray(example.wishlist) ? wishlistFrom(example) : null, files: [], example: true };
       await rebuild();
       window.scrollTo({ top: 0 });
     } catch (err) {

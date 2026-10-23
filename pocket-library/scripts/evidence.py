@@ -42,6 +42,14 @@ GAMENATIVE_VERDICTS = {'WORKS': 'works', 'MIXED': 'mixed', 'FIRST_RUN_FRICTION':
 ANTICHEAT_STATUS = {'Supported': 'works', 'Running': 'works', 'Broken': 'blocked', 'Denied': 'blocked'}
 ANTICHEAT_NOTE = 'Anti-cheat blocks it on Linux-based apps'
 
+# Input label from the Steam Games Dataset: its categories say whether a game supports a
+# controller, and its player tags name the genre. Only a Controller label that wasn't
+# checked by hand changes: to Touch for genres played by tapping, else to Touch OK for
+# games with no controller support (they're played with a mouse, which taps stand in for).
+TOUCH_TAGS = {'Card Game', 'Turn-Based', 'Turn-Based Strategy', 'Turn-Based Tactics', 'Point & Click',
+              'Visual Novel', 'Board Game', 'Solitaire', 'Hidden Object', 'Word Game', 'Clicker', 'Idler'}
+CONTROLLER_CATEGORIES = {'full controller support', 'partial controller support'}
+
 PAGE_DATA = re.compile(r'<script id="pl-data" type="application/json">(.*?)</script>', re.S)
 
 
@@ -152,6 +160,28 @@ def load_anticheat(path):
     return out
 
 
+def load_input(path, wanted):
+    """App ID -> (supports a controller, played by tapping) from the Steam Games Dataset games.csv."""
+    csv.field_size_limit(1 << 30)
+    out = {}
+    with open(path, encoding='utf-8', newline='') as f:
+        for row in csv.DictReader(f):
+            app = (row.get('AppID') or '').strip()
+            categories = {c.strip().lower() for c in (row.get('Categories') or '').split(',') if c.strip()}
+            if app not in wanted or not categories:
+                continue
+            tags = {t.strip() for t in (row.get('Tags') or '').split(',')}
+            out[app] = (bool(categories & CONTROLLER_CATEGORIES), bool(tags & TOUCH_TAGS))
+    return out
+
+
+def input_label(touch, data):
+    if touch != 'c' or not data:
+        return touch
+    controller, tapping = data
+    return 't' if tapping else 'c' if controller else 'o'
+
+
 # ---- the rules ------------------------------------------------------------------
 
 def weight_from_requirements(score, ram):
@@ -169,7 +199,7 @@ def linux_verdict(reports, runs):
     return 'works' if share >= LINUX_WORKS_SHARE else 'mixed' if share >= LINUX_MIXED_SHARE else 'fails'
 
 
-def check(entry, req, pdb, gn, ac, override=None, have=()):
+def check(entry, req, pdb, gn, ac, override=None, have=(), inp=None):
     """Apply the rules to one entry. Returns the new entry and a reason when the weight or status changed."""
     e = dict(entry)
     e['heads'] = R.clean_heads(e['heads'])
@@ -199,6 +229,8 @@ def check(entry, req, pdb, gn, ac, override=None, have=()):
         e['gamenative'] = gn or ''
     if 'anticheat' in have:
         e['anticheat'] = ac or ''
+    if not hand_checked and not (override and 'touch' in override):
+        e['touch'] = input_label(e['touch'], inp)
     for letter, field in (('p', 'linux'), ('g', 'gamenative'), ('a', 'anticheat')):
         if e[field]:
             basis.add(letter)
@@ -262,7 +294,7 @@ def main():
         p = os.path.join(src, name)
         return p if os.path.exists(p) else None
 
-    req = pdb = gn = ac = {}
+    req = pdb = gn = ac = inp = {}
     if path('games.csv'):
         req = load_requirements(path('games.csv'), wanted)
         have.add('requirements')
@@ -289,6 +321,11 @@ def main():
         have.add('anticheat')
     else:
         missing.append('AreWeAntiCheatYet list')
+    if path('steam-games.csv'):
+        inp = load_input(path('steam-games.csv'), wanted)
+        have.add('input')
+    else:
+        missing.append('Steam Games Dataset')
     overrides = {}
     if args.overrides:
         with open(args.overrides, encoding='utf-8') as f:
@@ -296,7 +333,9 @@ def main():
 
     out, changes, review = {}, Counter(), []
     for app, entry in games.items():
-        new, reason = check(entry, req.get(app), pdb.get(app), gn.get(app), ac.get(app), overrides.get(app), have)
+        new, reason = check(entry, req.get(app), pdb.get(app), gn.get(app), ac.get(app), overrides.get(app), have, inp.get(app))
+        if new['touch'] != entry['touch']:
+            changes['input label'] += 1
         out[app] = new
         if reason:
             changes[reason.split(':')[0]] += 1

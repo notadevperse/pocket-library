@@ -7,9 +7,10 @@
 #   worklist.json   GameNative nightly worklist               github.com/GameNative/gamenative-compat
 #   games.csv       PCGameBenchmarks requirements (CC BY 4.0) github.com/emilioagustin83/pc-game-fps-dataset
 #   anticheat.json  AreWeAntiCheatYet list (MIT)              github.com/AreWeAntiCheatYet/AreWeAntiCheatYet
+#   steam-games.csv Steam Games Dataset (MIT), input labels   huggingface.co/datasets/FronkonGames/steam-games-dataset
 #   sources.json    the date of each dataset, shown on the page
 #
-# About 75 MB in total. Each download is independent: if one fails, the rest still
+# About 475 MB in total (the Steam Games Dataset is 400 MB). Each download is independent: if one fails, the rest still
 # run and evidence.py skips the missing one. Nothing here contacts Steam or any app's servers.
 set -u
 out="${1:?usage: bash fetch-sources.sh <folder>}"
@@ -61,6 +62,15 @@ if clone https://github.com/AreWeAntiCheatYet/AreWeAntiCheatYet anticheat && cp 
   date[anticheat]=$(commit_date anticheat); echo "  ok"
 else
   echo "  failed; skipped"
+fi
+
+echo "Steam Games Dataset (input labels)"
+hf=https://huggingface.co/api/datasets/FronkonGames/steam-games-dataset
+if curl -fsSL --retry 3 -o steam-games.csv "https://huggingface.co/datasets/FronkonGames/steam-games-dataset/resolve/main/games.csv"; then
+  date[input]=$(curl -fsSL "$hf" | python3 -I -c 'import json, sys; print(json.load(sys.stdin).get("lastModified", "")[:10])')
+  echo "  ok"
+else
+  rm -f steam-games.csv; echo "  failed; skipped"
 fi
 
 {

@@ -16,6 +16,7 @@ KIT = os.path.join(ROOT, 'pocket-library')
 SCRIPTS = os.path.join(KIT, 'scripts')
 sys.path.insert(0, SCRIPTS)
 
+import changes  # noqa: E402
 import evidence  # noqa: E402
 import ratings as R  # noqa: E402
 
@@ -74,7 +75,8 @@ class Rules(unittest.TestCase):
 
     def check(self, entry, **kw):
         have = {'requirements', 'protondb', 'gamenative', 'anticheat'}
-        new, _ = evidence.check(R.normalize(entry), kw.get('req'), kw.get('pdb'), kw.get('gn'), kw.get('ac'), kw.get('override'), have)
+        new, _ = evidence.check(R.normalize(entry), kw.get('req'), kw.get('pdb'), kw.get('gn'), kw.get('ac'), kw.get('override'), have,
+                                kw.get('inp'))
         return new
 
     def test_never_lowers_weight(self):
@@ -103,9 +105,60 @@ class Rules(unittest.TestCase):
         new = self.check(dict(R.blank('X'), heads='Needs EA app; Mixed ProtonDB reports (50% of 8 say it runs)'))
         self.assertEqual(new['heads'], 'Needs EA app')
 
+    def test_input_label_from_the_dataset(self):
+        self.assertEqual(evidence.input_label('c', (True, True)), 't')
+        self.assertEqual(evidence.input_label('c', (False, False)), 'o')
+        self.assertEqual(evidence.input_label('c', (True, False)), 'c')
+        self.assertEqual(evidence.input_label('o', (True, False)), 'o')
+        self.assertEqual(evidence.input_label('c', None), 'c')
+        self.assertEqual(self.check(R.blank('X'), inp=(False, False))['touch'], 'o')
+        self.assertEqual(self.check(dict(R.blank('X'), basis='h'), inp=(False, False))['touch'], 'c')
+
+    def test_input_dataset_is_read(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, 'steam-games.csv')
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write('AppID,Name,Categories,Tags\n'
+                        '1,A,"Single-player,Full controller support","Action,Platformer"\n'
+                        '2,B,"Single-player","Card Game,Roguelike"\n'
+                        '3,C,"",""\n'
+                        '4,D,"Single-player","Strategy"\n')
+            got = evidence.load_input(path, {'1', '2', '3'})
+        self.assertEqual(got, {'1': (True, False), '2': (False, True)})
+
     def test_basis_letters(self):
         new = self.check(R.blank('X'), req=(500, 4, 'X'), pdb=(10, 9), gn='works', ac='works')
         self.assertEqual(new['basis'], 'spga')
+
+
+class Changes(unittest.TestCase):
+    def test_notes_and_summary(self):
+        old = {'1': dict(R.blank('Alpha'), weight='light', gamenative='mixed'),
+               '2': dict(R.blank('Beta'), weight='medium', linux='works'),
+               '3': R.blank('Gone')}
+        new = {'1': dict(old['1'], gamenative='works', touch='t'),
+               '2': dict(old['2'], status='no', linux=''),
+               '4': R.blank('Fresh')}
+        with tempfile.TemporaryDirectory() as d:
+            paths = [os.path.join(d, n) for n in ('old.json', 'new.json', 'sum.md')]
+            R.save(paths[0], {}, old)
+            R.save(paths[1], {'updated': '2026-11-03'}, new)
+            run('changes.py', '--old', paths[0], '--new', paths[1], '--summary', paths[2], '--write')
+            meta, games = R.load(paths[1])
+            with open(paths[2], encoding='utf-8') as f:
+                text = f.read()
+        self.assertEqual(games, {k: R.normalize(v) for k, v in new.items()})
+        self.assertEqual(meta['changes'], {'since': '2026-11-03', 'games': {
+            '1': 'GameNative: works (was mixed)',
+            '2': 'Now Not on Android (was Medium); ProtonDB: no verdict now (was runs)',
+            '4': 'New to the list'}})
+        for line in ('**3 games changed.**', '**GameNative: better** (1): Alpha', '**Taken off the list** (1): Gone',
+                     '**Input label now Touch (was Controller)** (1): Alpha'):
+            self.assertIn(line, text)
+
+    def test_long_lists_are_cut_short(self):
+        sections = {'GameNative: better': [f'Game {i:02}' for i in range(20)]}
+        self.assertIn('Game 14, and 5 more', changes.summary({'x': ['y']}, sections))
 
 
 class Build(unittest.TestCase):
@@ -115,7 +168,8 @@ class Build(unittest.TestCase):
         ratings = {'620': dict(R.blank('Portal 2'), weight='light', touch='o', basis='spg', linux='works'),
                    '730': dict(R.blank('Counter-Strike 2'), status='no', note='Competitive online')}
         self.ratings = self.write('ratings.json', None)
-        R.save(self.ratings, {'sources': {'protondb': '2026-10-01'}}, ratings)
+        R.save(self.ratings, {'sources': {'protondb': '2026-10-01'},
+                              'changes': {'since': '2026-10-23', 'games': {'620': 'GameNative: works (was mixed)'}}}, ratings)
 
     def write(self, name, data):
         path = os.path.join(self.dir, name)
@@ -137,6 +191,36 @@ class Build(unittest.TestCase):
         self.assertEqual((by_id['620']['weight'], by_id['620']['hours'], by_id['620']['linux']), ('light', 2, 'works'))
         self.assertEqual(by_id['99']['weight'], 'unknown')
         self.assertEqual(data['sources'], {'protondb': '2026-10-01'})
+        self.assertEqual(data['changes']['games'], {'620': 'GameNative: works (was mixed)'})
+
+    def test_wishlist(self):
+        games = self.write('g.json', {'games': [{'appid': 620, 'name': 'Portal 2', 'minutes': 0}]})
+        wishlist = self.write('w.json', {'kind': 'wishlist', 'wishlist': ['620', '730', '99']})
+        data = self.build('--games', games, '--wishlist', wishlist)
+        self.assertEqual([(g['appid'], g['status']) for g in data['wish']], [('730', 'no'), ('99', '')])
+        again = os.path.join(self.dir, 'again.html')
+        run('build.py', '--page', os.path.join(self.dir, 'page.html'), '--out', again, '--ratings', self.ratings)
+        self.assertEqual(len(read_page(again)['wish']), 2)
+
+    def test_gog(self):
+        games = self.write('g.json', {'games': [{'appid': 620, 'name': 'Portal 2', 'minutes': 0}]})
+        gog = self.write('gog.json', {'kind': 'gog', 'games': [{'id': '1', 'name': 'Portal 2'}, {'id': '9', 'name': 'Only On GOG'}]})
+        data = self.build('--games', games, '--gog', gog)
+        by_id = {g['appid']: g for g in data['games']}
+        self.assertEqual(sorted(by_id), ['620', 'gog-9'])
+        self.assertEqual((by_id['620']['collections'], 'store' in by_id['620']), (['GOG'], False))
+        self.assertEqual((by_id['gog-9']['store'], by_id['gog-9']['weight']), ('gog', 'unknown'))
+        self.assertIn('GOG', data['collections'])
+        again = os.path.join(self.dir, 'again.html')  # a fresh Steam list keeps the GOG games
+        run('build.py', '--page', os.path.join(self.dir, 'page.html'), '--out', again, '--ratings', self.ratings, '--games', games)
+        self.assertEqual(sorted(g['appid'] for g in read_page(again)['games']), ['620', 'gog-9'])
+
+    def test_gog_editions(self):
+        import build
+        self.assertEqual(build.without_edition('The Witcher 3: Wild Hunt - Game of the Year Edition'), 'thewitcher3wildhunt')
+        self.assertEqual(build.without_edition('Marigold'), 'marigold')
+        self.assertEqual(build.without_edition('Mafia II (Classic)'), 'mafiaii')
+        self.assertEqual(build.without_edition('Fallout: New Vegas Ultimate Edition'), 'falloutnewvegas')
 
     def test_licenses_only(self):
         lic = self.write('l.json', {'licenses': [{'name': 'Portal 2', 'date': '2022-03-21'}, {'name': 'Some Bundle', 'date': '2020-01-01'}]})
@@ -197,6 +281,7 @@ assert.strictEqual(fileKind({ kind: 'games', games: [] }), 'games');
 assert.strictEqual(fileKind({ response: { games: [] } }), 'games');
 assert.strictEqual(fileKind({ kind: 'licenses', licenses: [] }), 'licenses');
 assert.strictEqual(fileKind([['user-collections.uc-1', {}]]), 'collections');
+assert.strictEqual(fileKind({ kind: 'wishlist', wishlist: [] }), 'wishlist');
 assert.strictEqual(fileKind({ hello: 1 }), '');
 assert.strictEqual(fileKind([1, 2]), '');
 
@@ -207,6 +292,25 @@ assert.deepStrictEqual([out['620'].weight, out['620'].hours, out['620'].linux], 
 assert.deepStrictEqual([out['99'].weight, out['99'].touch, out['99'].basis, out['99'].name], ['unknown', 'c', '', 'Other']);
 // Steam's own API format works too
 assert.strictEqual(gamesFrom({ response: { games: [{ appid: 620, playtime_forever: 60 }] } })[0].minutes, 60);
+
+// Wishlist: rated by app ID, games already owned left out, unknown ones still listed
+const wish = rateWishlist(wishlistFrom({ wishlist: ['620', 730, '730', '555'] }), ratings, [{ appid: '620' }]);
+assert.deepStrictEqual(wish.map(g => [g.appid, g.status, g.name]), [['730', 'no', 'Counter-Strike 2'], ['555', '', 'App 555']]);
+
+// GOG: matched by name, a game owned on both stores shows once, all tagged GOG
+assert.strictEqual(fileKind({ kind: 'gog', games: [] }), 'gog');
+const gog = gogFrom({ games: [{ id: 1, name: 'PORTAL 2' }, { id: 2, name: 'Counter-Strike 2' }, { id: 3, name: 'Only On GOG' }] });
+out = byId(rateLibrary({ games: gamesFrom({ games: [{ appid: 620, name: 'Portal 2', minutes: 60 }] }), licenses: null, collections: null, gog }, ratings).games);
+assert.deepStrictEqual(Object.keys(out).sort(), ['620', '730', 'gog-3']);
+assert.deepStrictEqual([out['620'].hours, out['620'].store, out['620'].collections], [1, undefined, ['GOG']]);
+assert.deepStrictEqual([out['730'].status, out['730'].store], ['no', 'gog']);
+assert.deepStrictEqual([out['gog-3'].weight, out['gog-3'].name, out['gog-3'].store], ['unknown', 'Only On GOG', 'gog']);
+
+// GOG names without the edition still match; a word that only ends like one doesn't lose it
+assert.strictEqual(withoutEdition('The Witcher 3: Wild Hunt — Remastered'), withoutEdition('The Witcher 3: Wild Hunt'));
+assert.strictEqual(withoutEdition('Deus Ex: Game of the Year Edition'), 'deusex');
+assert.strictEqual(withoutEdition('Marigold'), 'marigold');
+assert.strictEqual(withoutEdition('Quake II (Original)'), 'quakeii');
 
 // Licenses only: matched to app IDs by name; bundles are left out and counted
 let result = rateLibrary({ games: null, licenses: licensesFrom({ licenses: [

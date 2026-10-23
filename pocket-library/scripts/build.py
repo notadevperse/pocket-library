@@ -18,6 +18,9 @@ Inputs
   --licenses     steam-licenses.json from bookmark 2: adds the date each game was added.
                  Without --games, it is also the games list, matched to app IDs by name.
   --collections  Steam's cloud-storage-namespace-1.json
+  --wishlist     steam-wishlist.json from bookmark 3: wishlisted games, shown under Wishlist
+  --gog          gog-games.json from bookmark 4: GOG games, matched to the list by name and
+                 tagged GOG. Without it, GOG games already on the page are kept.
   --ratings      ratings.json (the kit's base ratings, format 1 or 2)
   --extra        entries that win over everything else (evidence.py output, hand ratings)
   --apps         [{"name", "version", "date", "note"}], merged into the page's apps by name
@@ -67,6 +70,8 @@ def page_game(game):
                            game.get('heads'), game.get('basis')])
     else:
         entry = R.normalize(game)
+    if game.get('store'):
+        entry['store'] = game['store']
     entry.update(appid=str(game['appid']), hours=game.get('hours', 0),
                  added=iso_date(game.get('added') or game.get('date', '')),
                  collections=game.get('collections', []))
@@ -140,6 +145,43 @@ def apply_ratings(games, base, extra):
             game.setdefault(k, v)
 
 
+# Stores name editions differently ("Wild Hunt" on GOG, "Wild Hunt — Remastered" on Steam),
+# so GOG games that don't match exactly are matched again without the edition or a closing note
+# in brackets, like "(1994)" or "(Classic)". Same as template.html.
+EDITION = re.compile(r"\s*[-–—:(]?\s*\b(game of the year|goty|definitive|enhanced|complete|remastered|director'?s cut|deluxe|gold"
+                     r"|ultimate|anniversary|special|collector'?s|digital|standard)( edition)?\)?\s*$", re.I)
+BRACKETS = re.compile(r'\s*\([^)]*\)\s*$')
+EDITION_WORD = re.compile(r'\s*[-–—:]?\s*\bedition\s*$', re.I)
+
+
+def without_edition(name):
+    out, before = (name or '').replace('™', '').replace('®', '').strip(), None
+    while before != out:
+        before = out
+        out = EDITION_WORD.sub('', EDITION.sub('', BRACKETS.sub('', out))).strip()
+    return simple_name(out)
+
+
+def apply_gog(games, gog, base):
+    """Add GOG games, matched to the list by name. A game also owned on Steam shows once.
+
+    Returns the app IDs owned on GOG, for the GOG tag."""
+    known, loose = {}, {}
+    for app, entry in base.items():
+        known.setdefault(simple_name(entry['name']), app)
+        if without_edition(entry['name']):
+            loose.setdefault(without_edition(entry['name']), app)
+    listed = {g['appid'] for g in games}
+    owned = set()
+    for g in gog:
+        appid = known.get(simple_name(g.get('name'))) or loose.get(without_edition(g.get('name'))) or f"gog-{g['id']}"
+        owned.add(appid)
+        if appid not in listed:
+            listed.add(appid)
+            games.append(dict(R.blank(), appid=appid, name=g.get('name', ''), hours=0, added='', collections=[], store='gog'))
+    return owned
+
+
 def apply_collections(games, path):
     by_app, names = {}, []
     for key, value in load_json(path):
@@ -152,15 +194,16 @@ def apply_collections(games, path):
         for app in collection['added']:
             by_app.setdefault(str(app), []).append(collection['name'])
     for game in games:
-        game['collections'] = sorted(set(by_app.get(game['appid'], [])))
-    return names
+        gog = ['GOG'] if 'GOG' in game.get('collections', []) else []  # the store tag isn't a Steam collection
+        game['collections'] = sorted(set(by_app.get(game['appid'], []) + gog))
+    return names + (['GOG'] if any('GOG' in g['collections'] for g in games) and 'GOG' not in names else [])
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--page', required=True)
     ap.add_argument('--out', required=True)
-    for name in ('from-page', 'games', 'licenses', 'collections', 'ratings', 'extra', 'apps', 'chip', 'gpu', 'updated'):
+    for name in ('from-page', 'games', 'licenses', 'collections', 'wishlist', 'gog', 'ratings', 'extra', 'apps', 'chip', 'gpu', 'updated'):
         ap.add_argument('--' + name)
     ap.add_argument('--device', '--phone', dest='device')
     ap.add_argument('--gpu-class', choices=['full', 'limited', 'other'])
@@ -173,10 +216,12 @@ def main():
     if 'phone' in data:  # format 1 pages
         data.setdefault('device', data.pop('phone'))
     old_games = data.get('games', [])
+    old_wish = data.get('wish', [])
     if a.from_page:
         with open(a.from_page, encoding='utf-8') as f:
             source = page_data(f.read())
         old_games = source.get('games', [])
+        old_wish = source.get('wish', [])
         for key in ('chip', 'gpu', 'gpuClass', 'collections', 'updated'):
             if source.get(key):
                 data[key] = source[key]
@@ -192,9 +237,29 @@ def main():
     unmatched = []
     if a.licenses:
         games, unmatched = apply_licenses(games, load_json(a.licenses).get('licenses', []), base)
+    on_gog = set()
+    if a.gog:
+        games = [g for g in games if g.get('store') != 'gog']
+        on_gog = apply_gog(games, load_json(a.gog).get('games', []), base)
+    elif a.games or a.licenses:  # a fresh Steam list: keep the GOG games already on the page
+        listed = {g['appid'] for g in games}
+        games += [g for app, g in old.items() if g.get('store') == 'gog' and app not in listed]
     apply_ratings(games, base, extra)
+    if a.wishlist:
+        wish = [dict(R.blank(), appid=str(app), hours=0, added='', collections=[])
+                for app in dict.fromkeys(load_json(a.wishlist).get('wishlist', []))]
+    else:
+        wish = [page_game(g) for g in old_wish]
+    owned = {g['appid'] for g in games}
+    wish = [g for g in wish if g['appid'] not in owned]
+    apply_ratings(wish, base, extra)
     if a.collections:
         data['collections'] = apply_collections(games, a.collections)
+    if a.gog:
+        for g in games:
+            tags = [c for c in g.get('collections', []) if c != 'GOG']
+            g['collections'] = sorted(tags + ['GOG']) if g['appid'] in on_gog else tags
+        data['collections'] = [c for c in data.get('collections', []) if c != 'GOG'] + (['GOG'] if on_gog else [])
     if a.apps:
         updates = {app['name'].lower(): app for app in load_json(a.apps)}
         for app in data.get('apps', []):
@@ -205,7 +270,14 @@ def main():
             data[key] = value
     if meta.get('sources'):
         data['sources'] = meta['sources']
-    data['games'] = [{k: g[k] for k in ('appid', 'hours', 'added', 'collections') + R.FIELDS} for g in games]
+    if meta.get('changes'):
+        data['changes'] = meta['changes']
+    data['games'] = [dict({k: g[k] for k in ('appid', 'hours', 'added', 'collections') + R.FIELDS},
+                          **({'store': g['store']} if g.get('store') else {})) for g in games]
+    if wish:
+        data['wish'] = [{k: g[k] for k in ('appid', 'hours', 'added', 'collections') + R.FIELDS} for g in wish]
+    else:
+        data.pop('wish', None)
 
     blob = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
     html = PAGE_DATA.sub(lambda m: m.group(1) + blob + m.group(3), html, count=1)
@@ -216,7 +288,7 @@ def main():
     for g in games:
         group = g['status'] or g['weight']
         groups[group] = groups.get(group, 0) + 1
-    print(f'{len(games)} games; {groups}; collections: {len(data.get("collections", []))}')
+    print(f'{len(games)} games; {groups}; collections: {len(data.get("collections", []))}; wishlist: {len(wish)}')
     unknown = [g['name'] for g in games if g['weight'] == 'unknown' and not g['status']]
     if unknown:
         print(f'{len(unknown)} with unknown weight, e.g.: ' + '; '.join(unknown[:15]))

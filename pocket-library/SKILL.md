@@ -1,6 +1,6 @@
 ---
 name: pocket-library
-description: Build or update a Pocket Library page that shows which of a person's Steam games can run on their Android phone or handheld with DroidDeck, GameNative, or GameHub Lite, with their Steam collections and playtime. Use when the user asks to fill, update, or refresh their Pocket Library, or attaches steam-games.json, steam-licenses.json, or cloud-storage-namespace-1.json.
+description: Build or update a Pocket Library page that shows which of a person's Steam games can run on their Android phone or handheld with DroidDeck, GameNative, or GameHub Lite, with their Steam collections and playtime. Use when the user asks to fill, update, or refresh their Pocket Library, or attaches steam-games.json, steam-licenses.json, steam-wishlist.json, gog-games.json, or cloud-storage-namespace-1.json.
 ---
 
 # Pocket Library
@@ -10,12 +10,12 @@ Pocket Library is a single page listing a person's Steam games, each with a weig
 Files in this skill:
 - `template.html`: the blank page. Never change its design; only its data block changes.
 - `ratings.json`: 11,064 starting entries. Its format is described at the top of `scripts/ratings.py`.
-- `bookmarks/`: readable code for the two bookmarks the person uses to get their games.
+- `bookmarks/`: readable code for the four bookmarks the person uses to get their Steam games, Steam wishlist, and GOG games.
 - `scripts/build.py`: fills the page. `python3 scripts/build.py --help` lists the inputs.
 - `scripts/fetch-sources.sh`: downloads the public datasets (see Data sources).
 - `scripts/evidence.py`: checks games against those datasets. `--help` lists the inputs; the rules are the settings at the top of the file.
 - `apps.json`: the three apps' latest versions, refreshed monthly by the project's GitHub check. A starting point for command 4.
-- `example-library.json`, `scripts/make_web.py`, `scripts/check_apps.py`, `scripts/make_zip.py`: for the project's website and its monthly refresh. You don't need them to fill a page.
+- `example-library.json`, `scripts/make_web.py`, `scripts/check_apps.py`, `scripts/changes.py`, `scripts/make_zip.py`: for the project's website and its monthly refresh. You don't need them to fill a page.
 
 The project also runs as a website without Claude (notadevperse.github.io/pocket-library): people open their Steam files there and the page rates them in their browser. A copy saved from the website (with "Save a copy of this page") is a filled page like any other: use it as `--page`.
 
@@ -25,6 +25,8 @@ The project also runs as a website without Claude (notadevperse.github.io/pocket
   - `steam-games.json`: every game with playtime, from their Steam games page.
   - `steam-licenses.json`: every license with the date they got it, from store.steampowered.com/account/licenses/. No playtime, and some licenses are bundles or extras; `build.py` matches licenses to games by name and reports the ones it couldn't match. With both files, the licenses only add dates.
   - If they have no file but you can browse their signed-in Steam games page (for example through Claude in Chrome), read the list from the page instead: `window.SSR.renderContext.queryData`, query key `OwnedGames`.
+- `steam-wishlist.json` (optional): the app IDs on their Steam wishlist, from bookmark 3. `build.py --wishlist` rates them and leaves out games they already own; the page shows them under **Wishlist**. Games outside `ratings.json` show as Unknown; judge them like any other unrated game if asked.
+- `gog-games.json` (optional): their GOG library, from bookmark 4. `build.py --gog` matches the games to `ratings.json` by name (and again without edition words such as "Game of the Year Edition"), tags them GOG, and shows a game owned on both stores once. Unmatched games get an ID like `gog-1207658924` and show as Unknown; judge them like any other unrated game if asked. DroidDeck and GameNative load GOG libraries; GameHub Lite's GOG support isn't documented, so the page doesn't suggest it for GOG-only games.
 - `cloud-storage-namespace-1.json` (optional): their collections, from `Steam/userdata/<number>/config/cloudstorage/`.
 - Their device: a phone or an Android handheld, named by them (see Device).
 - For updates, the link to their existing Pocket Library page.
@@ -47,8 +49,9 @@ Use only these public datasets for compatibility data. They are published for re
 - **GameNative** nightly worklist: github.com/GameNative/gamenative-compat. Games with 20+ player ratings in GameNative, on Snapdragon devices. It covers one app, so it's shown as a report and never changes a weight or status.
 - **PCGameBenchmarks** requirements (CC BY 4.0): github.com/emilioagustin83/pc-game-fps-dataset. Steam's minimum requirements with a benchmark score for the minimum graphics card: the weight signal.
 - **AreWeAntiCheatYet** (MIT): github.com/AreWeAntiCheatYet/AreWeAntiCheatYet. Whether a game's anti-cheat allows Linux.
+- **Steam Games Dataset** (MIT): huggingface.co/datasets/FronkonGames/steam-games-dataset. Whether a game supports a controller, and its player tags. Used for the input label only, never for weight or status.
 
-Get them with `bash scripts/fetch-sources.sh sources` (about 75 MB; only the newest ProtonDB file). Don't crawl the Steam store, ProtonDB's website, or any app's servers for compatibility data, and don't work around a download that fails: name the missing source and run without it. The page credits all four sources in its footer; keep that.
+Get them with `bash scripts/fetch-sources.sh sources` (about 475 MB; only the newest ProtonDB file). Don't crawl the Steam store, ProtonDB's website, or any app's servers for compatibility data, and don't work around a download that fails: name the missing source and run without it. The page credits all five sources in its footer; keep that.
 
 `evidence.py` fills unknown weights from requirements, raises a weight only for 12 GB+ RAM, never lowers one, keeps entries checked by hand (basis `h`), and marks a game Not on Android when its anti-cheat blocks Linux and ProtonDB players don't say it runs. Minimum requirements are often wrong for small 2D games, and a blocked anti-cheat often only blocks the online mode, so check the games it lists for review.
 
@@ -56,13 +59,15 @@ Get them with `bash scripts/fetch-sources.sh sources` (about 75 MB; only the new
 
 Map the user's request to these. Each ends by publishing the page.
 
-1. **"Fill my Pocket Library"**: `build.py --page template.html` with their games file(s), `--collections` (if given), `--ratings ratings.json`, the device arguments, and `--updated`. Then do command 5, then command 4 so the apps show versions.
+1. **"Fill my Pocket Library"**: `build.py --page template.html` with their games file(s), `--collections`, `--wishlist`, and `--gog` (if given), `--ratings ratings.json`, the device arguments, and `--updated`. Then do command 5, then command 4 so the apps show versions.
 2. **"Update my games"**: their existing page as `--page`, with a fresh games file and `--ratings ratings.json`. Then do command 5 for the new games.
 3. **"Update my collections"**: existing page with a fresh `--collections`.
 4. **"Check the apps"**: look up the latest release of each app on GitHub (Droid-Deck/DroidDeck, utkarshdalal/GameNative, Producdevity/gamehub-lite: the release marked Latest, not pre-releases). Write `apps.json` (`[{"name","version","date","note"}]`, a short note only for something that matters to players) and rebuild with `--apps`.
 5. **"Re-check compatibility"**: fetch the sources, then run `python3 scripts/evidence.py --ratings ratings.json --page <their page> --sources sources --out extra-ratings.json --review review.json` (`--games` with their games file on a first fill). Check the games in `review.json` from what you know about each one; put changes in `overrides.json` (`{"appid": {"weight", "status", "note", "heads", "why"}}`) and run again with `--overrides overrides.json`, which marks them "checked by hand". For games still Unknown, judge them yourself (see Judging a game). Rebuild with `--extra extra-ratings.json`. Tell the user how many entries changed, how many say "estimate only", and which sources, if any, were missing.
 6. **"Refresh everything"**: commands 2, 3, 4, and 5 in one build.
 7. **"I have a new device"**: look it up (see Device) and rebuild the existing page with only the device arguments.
+8. **"Update my wishlist"**: existing page with a fresh `--wishlist` and `--ratings ratings.json`.
+9. **"Update my GOG games"**: existing page with a fresh `--gog` and `--ratings ratings.json`. Then do command 5 for the new games.
 
 Always pass `--updated` with today's date when anything changed.
 
