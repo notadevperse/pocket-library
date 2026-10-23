@@ -91,12 +91,14 @@ def json_array_items(path, chunk_size=1 << 22):
 # ---- loading the datasets -------------------------------------------------------
 
 def load_requirements(path, wanted):
-    """App ID -> (minimum card score, minimum RAM in GB, name) from PCGameBenchmarks games.csv."""
+    """App ID -> (minimum card score, minimum RAM in GB, name) from PCGameBenchmarks games.csv.
+
+    wanted None means every game (the same in the loaders below)."""
     out = {}
     with open(path, encoding='utf-8') as f:
         for row in csv.DictReader(f):
             app = str(int(float(row['steam_appid']))) if row.get('steam_appid') else None
-            if app not in wanted:
+            if wanted is not None and app not in wanted:
                 continue
             ram, year = number(row.get('min_ram_gb')), number(row.get('release_year'))
             if ram and (ram > 64 or (ram >= HEAVY_RAM_GB and year and year < 2010)):
@@ -105,15 +107,17 @@ def load_requirements(path, wanted):
     return out
 
 
-def load_protondb(path, wanted, titles=None):
+def load_protondb(path, wanted, titles=None, recent=None):
     """App ID -> (reports, reports saying it runs), using recent reports when there are enough.
 
-    If titles is a dict, it is filled with each game's ProtonDB title (for naming added games)."""
+    wanted None means every game. If titles is a dict, it is filled with each game's
+    ProtonDB title (for naming added games). If recent is a set, it is filled with the
+    games whose counts are recent reports only."""
     cutoff = time.time() - RECENT_YEARS * 365 * 86400
     counts = defaultdict(lambda: [0, 0, 0, 0])  # all, all yes, recent, recent yes
     for report in json_array_items(path):
         app = str(report.get('app', {}).get('steam', {}).get('appId'))
-        if app in wanted:
+        if wanted is None or app in wanted:
             if titles is not None and report.get('app', {}).get('title'):
                 titles.setdefault(app, report['app']['title'])
             runs = report.get('responses', {}).get('verdict') == 'yes'
@@ -123,6 +127,8 @@ def load_protondb(path, wanted, titles=None):
             if report.get('timestamp', 0) >= cutoff:
                 c[2] += 1
                 c[3] += runs
+    if recent is not None:
+        recent.update(app for app, c in counts.items() if c[2] >= MIN_REPORTS)
     return {app: (c[2], c[3]) if c[2] >= MIN_REPORTS else (c[0], c[1]) for app, c in counts.items()}
 
 
@@ -168,7 +174,7 @@ def load_input(path, wanted):
         for row in csv.DictReader(f):
             app = (row.get('AppID') or '').strip()
             categories = {c.strip().lower() for c in (row.get('Categories') or '').split(',') if c.strip()}
-            if app not in wanted or not categories:
+            if (wanted is not None and app not in wanted) or not categories:
                 continue
             tags = {t.strip() for t in (row.get('Tags') or '').split(',')}
             out[app] = (bool(categories & CONTROLLER_CATEGORIES), bool(tags & TOUCH_TAGS))
@@ -192,15 +198,17 @@ def weight_from_requirements(score, ram):
     return 'light' if score <= LIGHT_MAX_SCORE else 'medium' if score <= MEDIUM_MAX_SCORE else 'heavy'
 
 
-def linux_verdict(reports, runs):
-    if reports < MIN_REPORTS:
+def linux_verdict(reports, runs, min_reports=MIN_REPORTS):
+    if not reports or reports < min_reports:
         return ''
     share = runs / reports
     return 'works' if share >= LINUX_WORKS_SHARE else 'mixed' if share >= LINUX_MIXED_SHARE else 'fails'
 
 
-def check(entry, req, pdb, gn, ac, override=None, have=(), inp=None):
-    """Apply the rules to one entry. Returns the new entry and a reason when the weight or status changed."""
+def check(entry, req, pdb, gn, ac, override=None, have=(), inp=None, min_reports=MIN_REPORTS):
+    """Apply the rules to one entry. Returns the new entry and a reason when the weight or status changed.
+
+    min_reports is how many ProtonDB reports a verdict needs (the lookup list takes 1)."""
     e = dict(entry)
     e['heads'] = R.clean_heads(e['heads'])
     hand_checked = 'h' in e['basis']
@@ -224,7 +232,7 @@ def check(entry, req, pdb, gn, ac, override=None, have=(), inp=None):
             reason = f'raised: needs {ram:g} GB RAM'
 
     if 'protondb' in have:
-        e['linux'] = linux_verdict(*pdb) if pdb else ''
+        e['linux'] = linux_verdict(*pdb, min_reports) if pdb else ''
     if 'gamenative' in have:
         e['gamenative'] = gn or ''
     if 'anticheat' in have:

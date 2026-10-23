@@ -161,6 +161,41 @@ class Changes(unittest.TestCase):
         self.assertIn('Game 14, and 5 more', changes.summary({'x': ['y']}, sections))
 
 
+class Lookup(unittest.TestCase):
+    def test_every_protondb_game_with_its_report_count(self):
+        now = 2_000_000_000
+        reports = [{'app': {'steam': {'appId': '620'}, 'title': 'Portal 2'}, 'responses': {'verdict': 'yes'}, 'timestamp': now}] * 6 + [
+            {'app': {'steam': {'appId': '9'}, 'title': 'Few Reports'}, 'responses': {'verdict': 'no'}, 'timestamp': 0},
+            {'app': {'steam': {'appId': '9'}, 'title': 'Few Reports'}, 'responses': {'verdict': 'no'}, 'timestamp': 0},
+            {'app': {'steam': {}}, 'responses': {'verdict': 'yes'}, 'timestamp': 0}]
+        listed = {'620': dict(R.blank('Portal 2'), weight='light', basis='sh', note='Checked'),
+                  '730': dict(R.blank('Counter-Strike 2'), status='no')}
+        with tempfile.TemporaryDirectory() as d:
+            os.mkdir(os.path.join(d, 'sources'))
+            with open(os.path.join(d, 'sources', 'protondb.json'), 'w', encoding='utf-8') as f:
+                json.dump(reports, f)
+            R.save(os.path.join(d, 'ratings.json'), {'updated': '2026-11-03'}, listed)
+            out = os.path.join(d, 'lookup.json')
+            run('make_lookup.py', '--ratings', os.path.join(d, 'ratings.json'), '--sources', os.path.join(d, 'sources'), '--out', out)
+            with open(out, encoding='utf-8') as f:
+                data = json.load(f)
+        rows = {r[0]: dict(zip(data['fields'], r)) for r in data['games']}
+        self.assertEqual([r[0] for r in data['games']], ['620', '9', '730'])  # most reports first
+        self.assertEqual((rows['9']['name'], rows['9']['linux'], rows['9']['reports'], rows['9']['basis']), ('Few Reports', 'fails', 2, 'p'))
+        # A listed game keeps what was checked by hand; one with no reports is still there
+        self.assertEqual((rows['620']['weight'], rows['620']['note'], rows['620']['linux'], rows['620']['basis']), ('light', 'Checked', 'works', 'sph'))
+        self.assertEqual((rows['730']['status'], rows['730']['reports']), ('no', 0))
+
+    def test_website_list(self):
+        with open(os.path.join(ROOT, 'lookup.json'), encoding='utf-8') as f:
+            data = json.load(f)
+        self.assertEqual(data['format'], 1)
+        _, base = R.load(os.path.join(KIT, 'ratings.json'))
+        rows = [dict(zip(data['fields'], r)) for r in data['games']]
+        self.assertTrue(set(base) <= {r['appid'] for r in rows}, 'every listed game is in the lookup list')
+        self.assertEqual(R.problems({r['appid']: r for r in rows}), [])
+
+
 class Build(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.mkdtemp()
@@ -355,7 +390,7 @@ class Web(unittest.TestCase):
         data = read_page(os.path.join(ROOT, 'index.html'))
         self.assertTrue(data['web'])
         self.assertEqual(data['games'], [])
-        for key in ('ratingsUrl', 'exampleUrl'):
+        for key in ('ratingsUrl', 'exampleUrl', 'lookupUrl'):
             self.assertTrue(os.path.exists(os.path.join(ROOT, data[key])), data[key])
         with open(os.path.join(ROOT, 'index.html'), encoding='utf-8') as f:
             html = f.read()

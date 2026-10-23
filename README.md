@@ -95,6 +95,8 @@ That's it. Next time you open the website, your library is still there. Open new
 
 To use your library on your phone too, open the files there (send them to yourself), or open the saved copy.
 
+**Look up any game.** The website also has a search box for any game with a ProtonDB report, about 34,500 games, whether you own it or not. It needs no files. Type a name, a Steam app ID, or paste a Steam store link. Each result says how many ProtonDB reports it's based on, because many games have only a few.
+
 ## Using Claude (optional)
 
 Pocket Library started as a late-night chat with a friend about emulation on their new phone. What was once a Claude skill now runs in any browser; Claude is still there as an optional extra for games without data.
@@ -135,7 +137,7 @@ Each game gets a **weight**, from Steam's minimum requirements, and separate **r
 - **Heads-up**: a known extra hurdle, like a publisher launcher.
 - **Based on**: the data behind the entry, or "estimate only".
 
-The list covers 11,064 Steam games: Steam's top sellers, about 2,160 Steam Deck Verified games, and every game that had 5 or more ProtonDB reports as of October 2026. Of these, 10,814 are backed by data. On the website, games outside the list show as Unknown; Claude can judge them for you.
+The list covers 11,064 Steam games: Steam's top sellers, about 2,160 Steam Deck Verified games, and every game that had 5 or more ProtonDB reports as of October 2026. Of these, 10,814 are backed by data. On the website, games outside the list show as Unknown; Claude can judge them for you. **Look up any game** searches a bigger list, every game with at least one ProtonDB report, and gives a ProtonDB verdict from even 1 report, with the count.
 
 With Claude, re-checking compatibility downloads about 475 MB of public data, checks your whole library against it in seconds, and has Claude look at the few games the data flags. It never crawls Steam or any app's servers. Each request counts toward your Claude usage limits.
 
@@ -156,6 +158,7 @@ Best effort at the time of publishing. Specifically:
 ## What's in this project
 
 - `index.html`: the website. It's made from `pocket-library/template.html` by `scripts/make_web.py`; edit the template, not this file.
+- `lookup.json`: the list for **Look up any game**, made each month by `scripts/make_lookup.py`. Only the website uses it, so it isn't in the skill.
 - `screenshots/`: the pictures at the top, from the example library.
 - `fonts/`: the website's fonts, Chakra Petch and IBM Plex, both under the SIL Open Font License (the license files are in the folder).
 - `pocket-library-skill.zip`: the skill to upload to Claude.
@@ -173,8 +176,9 @@ Best effort at the time of publishing. Specifically:
     - `make_web.py` makes the website, and `make_zip.py` makes the skill zip.
     - `check_apps.py` looks up the apps' latest releases.
     - `changes.py` says in plain words what changed for each game in a refresh.
+    - `make_lookup.py` makes `lookup.json` for the website's **Look up any game**.
 - `tests/`: checks that run on every change (`python3 -m unittest discover tests`).
-- `.github/workflows/`: the check on every change, and the monthly data refresh, which re-downloads the public data, re-checks every game, notes what changed for each game, updates the app versions, and opens a pull request to approve.
+- `.github/workflows/`: the check on every change, and the monthly data refresh, which re-downloads the public data, re-checks every game, notes what changed for each game, rebuilds the lookup list, updates the app versions, and opens a pull request to approve.
 - [`CHANGELOG.md`](CHANGELOG.md): what changed in each version.
 
 No skill? Attach the files in `pocket-library/` to your chat along with your own files, and add "Follow SKILL.md."

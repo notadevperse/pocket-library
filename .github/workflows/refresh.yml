@@ -1,5 +1,6 @@
 # Once a month: download the five public datasets, re-check every game in
-# ratings.json, note in plain words what changed for each game, look up the three
+# ratings.json, note in plain words what changed for each game, rebuild the list for
+# "Look up any game" (every game with a ProtonDB report), look up the three
 # apps' latest releases, rebuild the website and the skill zip, run the tests, and open
 # a pull request with the result if anything changed. Nothing reaches the website until the pull request is merged; then GitHub
 # Pages updates by itself.
@@ -53,6 +54,11 @@ jobs:
           python -I pocket-library/scripts/changes.py --old "$RUNNER_TEMP/old-ratings.json" \
             --new pocket-library/ratings.json --summary "$RUNNER_TEMP/changes.md" --write
 
+      - name: Rebuild the list for Look up any game
+        run: |
+          python -I pocket-library/scripts/make_lookup.py --ratings pocket-library/ratings.json \
+            --sources "$RUNNER_TEMP/sources" --out lookup.json | tee -a "$RUNNER_TEMP/summary.txt"
+
       - name: Check the apps' latest releases
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -70,7 +76,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          git add pocket-library/ratings.json pocket-library/apps.json index.html pocket-library-skill.zip
+          git add pocket-library/ratings.json pocket-library/apps.json lookup.json index.html pocket-library-skill.zip
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0
