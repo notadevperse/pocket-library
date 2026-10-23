@@ -75,7 +75,8 @@ class Rules(unittest.TestCase):
 
     def check(self, entry, **kw):
         have = {'requirements', 'protondb', 'gamenative', 'anticheat'}
-        new, _ = evidence.check(R.normalize(entry), kw.get('req'), kw.get('pdb'), kw.get('gn'), kw.get('ac'), kw.get('override'), have)
+        new, _ = evidence.check(R.normalize(entry), kw.get('req'), kw.get('pdb'), kw.get('gn'), kw.get('ac'), kw.get('override'), have,
+                                kw.get('inp'))
         return new
 
     def test_never_lowers_weight(self):
@@ -103,6 +104,27 @@ class Rules(unittest.TestCase):
     def test_old_automatic_heads_up_is_removed(self):
         new = self.check(dict(R.blank('X'), heads='Needs EA app; Mixed ProtonDB reports (50% of 8 say it runs)'))
         self.assertEqual(new['heads'], 'Needs EA app')
+
+    def test_input_label_from_the_dataset(self):
+        self.assertEqual(evidence.input_label('c', (True, True)), 't')
+        self.assertEqual(evidence.input_label('c', (False, False)), 'o')
+        self.assertEqual(evidence.input_label('c', (True, False)), 'c')
+        self.assertEqual(evidence.input_label('o', (True, False)), 'o')
+        self.assertEqual(evidence.input_label('c', None), 'c')
+        self.assertEqual(self.check(R.blank('X'), inp=(False, False))['touch'], 'o')
+        self.assertEqual(self.check(dict(R.blank('X'), basis='h'), inp=(False, False))['touch'], 'c')
+
+    def test_input_dataset_is_read(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, 'steam-games.csv')
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write('AppID,Name,Categories,Tags\n'
+                        '1,A,"Single-player,Full controller support","Action,Platformer"\n'
+                        '2,B,"Single-player","Card Game,Roguelike"\n'
+                        '3,C,"",""\n'
+                        '4,D,"Single-player","Strategy"\n')
+            got = evidence.load_input(path, {'1', '2', '3'})
+        self.assertEqual(got, {'1': (True, False), '2': (False, True)})
 
     def test_basis_letters(self):
         new = self.check(R.blank('X'), req=(500, 4, 'X'), pdb=(10, 9), gn='works', ac='works')

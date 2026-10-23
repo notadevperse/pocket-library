@@ -1,4 +1,4 @@
-# Once a month: download the four public datasets, re-check every game in
+# Once a month: download the five public datasets, re-check every game in
 # ratings.json, note in plain words what changed for each game, look up the three
 # apps' latest releases, rebuild the website and the skill zip, run the tests, and open
 # a pull request with the result if anything changed. Nothing reaches the website until the pull request is merged; then GitHub
@@ -82,7 +82,7 @@ jobs:
             echo
             cat "$RUNNER_TEMP/summary.txt"
             echo
-            echo "Thank you to ProtonDB, GameNative, PCGameBenchmarks, and AreWeAntiCheatYet for publishing their data."
+            echo "Thank you to ProtonDB, GameNative, PCGameBenchmarks, AreWeAntiCheatYet, and Fronkon Games for publishing their data."
           } > "$RUNNER_TEMP/message.txt"
           git switch -c "$branch"
           git -c user.name="github-actions[bot]" \

@@ -47,8 +47,9 @@ Use only these public datasets for compatibility data. They are published for re
 - **GameNative** nightly worklist: github.com/GameNative/gamenative-compat. Games with 20+ player ratings in GameNative, on Snapdragon devices. It covers one app, so it's shown as a report and never changes a weight or status.
 - **PCGameBenchmarks** requirements (CC BY 4.0): github.com/emilioagustin83/pc-game-fps-dataset. Steam's minimum requirements with a benchmark score for the minimum graphics card: the weight signal.
 - **AreWeAntiCheatYet** (MIT): github.com/AreWeAntiCheatYet/AreWeAntiCheatYet. Whether a game's anti-cheat allows Linux.
+- **Steam Games Dataset** (MIT): huggingface.co/datasets/FronkonGames/steam-games-dataset. Whether a game supports a controller, and its player tags. Used for the input label only, never for weight or status.
 
-Get them with `bash scripts/fetch-sources.sh sources` (about 75 MB; only the newest ProtonDB file). Don't crawl the Steam store, ProtonDB's website, or any app's servers for compatibility data, and don't work around a download that fails: name the missing source and run without it. The page credits all four sources in its footer; keep that.
+Get them with `bash scripts/fetch-sources.sh sources` (about 475 MB; only the newest ProtonDB file). Don't crawl the Steam store, ProtonDB's website, or any app's servers for compatibility data, and don't work around a download that fails: name the missing source and run without it. The page credits all five sources in its footer; keep that.
 
 `evidence.py` fills unknown weights from requirements, raises a weight only for 12 GB+ RAM, never lowers one, keeps entries checked by hand (basis `h`), and marks a game Not on Android when its anti-cheat blocks Linux and ProtonDB players don't say it runs. Minimum requirements are often wrong for small 2D games, and a blocked anti-cheat often only blocks the online mode, so check the games it lists for review.
 

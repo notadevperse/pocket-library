@@ -109,7 +109,7 @@ Each game gets a **weight**, from Steam's minimum requirements, and separate **r
 
 The list covers 11,064 Steam games: Steam's top sellers, about 2,160 Steam Deck Verified games, and every game that had 5 or more ProtonDB reports as of October 2026. Of these, 10,814 are backed by data. On the website, games outside the list show as Unknown; Claude can judge them for you.
 
-With Claude, re-checking compatibility downloads about 75 MB of public data, checks your whole library against it in seconds, and has Claude look at the few games the data flags. It never crawls Steam or any app's servers. Each request counts toward your Claude usage limits.
+With Claude, re-checking compatibility downloads about 475 MB of public data, checks your whole library against it in seconds, and has Claude look at the few games the data flags. It never crawls Steam or any app's servers. Each request counts toward your Claude usage limits.
 
 ### Limitations
 
@@ -167,10 +167,11 @@ The website bundles [Chakra Petch](https://github.com/m4rc1e/Chakra-Petch) (trim
 - **GameNative** compatibility worklist ([source](https://github.com/GameNative/gamenative-compat)), shared for reuse by the GameNative project.
 - **PCGameBenchmarks** system requirements, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) ([pcgamebenchmarks.com](https://pcgamebenchmarks.com)).
 - **AreWeAntiCheatYet** anti-cheat list, MIT License, © Starz0r, Curve ([source](https://github.com/AreWeAntiCheatYet/AreWeAntiCheatYet)).
+- **Steam Games Dataset** by Fronkon Games, MIT License ([source](https://huggingface.co/datasets/FronkonGames/steam-games-dataset)): controller support and player tags, used for the input labels only.
 - Steam store information for Steam Deck Verified games.
 
 ### Thank you
 
-Pocket Library would be guesswork without these people. Thank you to everyone who writes ProtonDB reports and to the ProtonDB maintainers for publishing them openly; to the GameNative team and every player who rates a game in the app; to PCGameBenchmarks for sharing its requirements data; to the AreWeAntiCheatYet contributors for tracking anti-cheat; and to the DroidDeck, GameNative, and GameHub Lite developers for making PC games playable on Android at all. Entries were compiled, and the code written, with help from Claude.
+Pocket Library would be guesswork without these people. Thank you to everyone who writes ProtonDB reports and to the ProtonDB maintainers for publishing them openly; to the GameNative team and every player who rates a game in the app; to PCGameBenchmarks for sharing its requirements data; to the AreWeAntiCheatYet contributors for tracking anti-cheat; to Fronkon Games for the Steam Games Dataset; and to the DroidDeck, GameNative, and GameHub Lite developers for making PC games playable on Android at all. Entries were compiled, and the code written, with help from Claude.
 
-Not affiliated with Anthropic, Valve, Steam, DroidDeck, GameNative, GameHub, GameSir, ProtonDB, PCGameBenchmarks, or AreWeAntiCheatYet. Steam is a trademark of Valve Corporation.
+Not affiliated with Anthropic, Valve, Steam, DroidDeck, GameNative, GameHub, GameSir, ProtonDB, PCGameBenchmarks, AreWeAntiCheatYet, or Fronkon Games. Steam is a trademark of Valve Corporation.
