@@ -19,7 +19,7 @@ Check which of your Steam games you can play on an Android phone or handheld (an
 
 ## 1. Get your games list (on a computer)
 
-Each option is a bookmark that reads a Steam page you already have open and saves a file to your Downloads. It sends nothing anywhere, and the file holds no account ID. Use one or both: option 1 gives playtime, option 2 adds the date you got each game. The readable code for both is in [`pocket-library/bookmarks/`](pocket-library/bookmarks).
+Each option is a bookmark that works on a Steam page you already have open and saves a file to your Downloads. It sends nothing anywhere, and the file holds no account ID. Use option 1, option 2, or both: option 1 gives playtime, and option 2 adds the date you got each game. Option 3 adds your wishlist. The readable code for all three is in [`pocket-library/bookmarks/`](pocket-library/bookmarks).
 
 **Option 1: games and playtime.** Works on your own games page even if your profile is private.
 
@@ -49,6 +49,20 @@ javascript:(async () => { const help = 'Open store.steampowered.com/account/lice
 3. Open `store.steampowered.com/account/licenses/` and sign in if asked.
 4. Click the bookmark. It saves `steam-licenses.json`.
 
+**Option 3: your wishlist.** Shows which games on your Steam wishlist could run on your device, before you buy them. It asks the Steam store for your own wishlist (one request, the same one the store makes to mark wishlisted games). The file holds only the games' Steam numbers; games outside Pocket Library's list show as Unknown.
+
+1. Copy this code:
+
+<!-- bm-wishlist -->
+```
+javascript:(async () => { const help = 'Open store.steampowered.com while signed in to Steam, then click this bookmark again.'; function save(fileName, data) { const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' })); link.download = fileName; document.body.appendChild(link); link.click(); link.remove(); } try { if (location.hostname !== 'store.steampowered.com') { throw new Error('not on the store'); } const response = await fetch('/dynamicstore/userdata/', { credentials: 'same-origin', cache: 'no-store' }); const data = await response.json(); const wishlist = [...new Set((data.rgWishlist || []).map(String))]; if (!wishlist.length) { alert('No wishlist found. Your wishlist may be empty, or you may not be signed in. ' + help); return; } save('steam-wishlist.json', { source: 'pocket-library', kind: 'wishlist', saved: new Date().toISOString(), wishlist: wishlist }); } catch (err) { alert(help); } })();
+```
+<!-- /bm-wishlist -->
+
+2. Add it as a bookmark the same way, named **Get my Steam wishlist**.
+3. Open `store.steampowered.com` and sign in if asked.
+4. Click the bookmark. It saves `steam-wishlist.json`.
+
 **Optional: your Steam collections.** They're in a file called `cloud-storage-namespace-1.json` on the same computer:
 
 - Windows: `C:\Program Files (x86)\Steam\userdata\<number>\config\cloudstorage\`
@@ -61,7 +75,7 @@ If there are several numbered folders, use the newest.
 
 1. Go to [notadevperse.github.io/pocket-library](https://notadevperse.github.io/pocket-library/).
 2. Pick your device type: recent Snapdragon, older Snapdragon, or not Snapdragon. Not sure? Find your model in **Settings → About phone**, then search for its name plus "chipset".
-3. Tap **Open my files** and pick `steam-games.json` and/or `steam-licenses.json`, plus your collections file if you want it. You can also drag the files onto the page.
+3. Tap **Open my files** and pick `steam-games.json` and/or `steam-licenses.json`, plus your collections and wishlist files if you want them. With a wishlist, **My games** and **Wishlist** at the top switch between the two. You can also drag the files onto the page.
 
 That's it. Next time you open the website, your library is still there. Open new files to update it, or tap **Save a copy of this page** to keep a file that works offline. The game data is refreshed once a month, and games that changed in the latest data say what changed.
 
@@ -135,9 +149,9 @@ Best effort at the time of publishing. Specifically:
   - `SKILL.md`: the instructions Claude follows.
   - `template.html`: the blank page.
   - `ratings.json`: the 11,064 starting entries. The format is described at the top of `scripts/ratings.py`.
-  - `example-library.json`: the example library, about 100 well-known games with made-up playtime.
+  - `example-library.json`: the example library, about 100 well-known games with made-up playtime, plus a short wishlist.
   - `apps.json`: the three apps' latest versions.
-  - `bookmarks/`: readable code for the two bookmarks.
+  - `bookmarks/`: readable code for the three bookmarks.
   - `scripts/`:
     - `build.py` fills the page.
     - `fetch-sources.sh` downloads the public data, and `evidence.py` checks games against it.

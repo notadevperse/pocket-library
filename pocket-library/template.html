@@ -75,6 +75,8 @@ header.deck .wrap { padding-block: 12px 10px; display: grid; gap: 10px; }
 #colls .chip[aria-pressed="true"] { border-color: var(--fg); background: var(--fg); color: var(--surface); }
 #colls .chip[aria-pressed="true"] .n { color: var(--surface); }
 .tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.viewseg { margin-top: 10px; }
+.viewseg .n { opacity: .7; margin-left: 4px; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-wrap: wrap; }
 .seg button { font: 500 0.78rem var(--body); border: 0; background: transparent; color: var(--muted); padding: 6px 10px; cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--fg); color: var(--surface); }
@@ -204,6 +206,10 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       <h1>Pocket Library</h1>
       <span class="sub" id="sub"></span>
     </div>
+    <div class="seg viewseg" id="viewseg" role="group" aria-label="Show" hidden>
+      <button type="button" data-view="owned" aria-pressed="true">My games <span class="n" id="owned-n"></span></button>
+      <button type="button" data-view="wish" aria-pressed="false">Wishlist <span class="n" id="wish-n"></span></button>
+    </div>
     <div class="meter" id="meter" aria-hidden="true"></div>
     <div class="search">
       <input id="q" type="search" placeholder="Search your games" autocomplete="off" aria-label="Search games">
@@ -259,7 +265,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       </div>
       <div class="option">
         <b class="title">2. Your games</b>
-        <p>Open <code>steam-games.json</code> or <code>steam-licenses.json</code> (or both), and your collections file if you want it. The steps under <b>Get your games list</b> below make them. You can also drop the files onto this page.</p>
+        <p>Open <code>steam-games.json</code> or <code>steam-licenses.json</code> (or both), and your collections and wishlist files if you want them. The steps under <b>Get your games list</b> below make them. You can also drop the files onto this page.</p>
         <div class="btnrow">
           <button class="btn primary" type="button" data-open-files>Open my files</button>
           <button class="btn" type="button" data-example>Try an example library</button>
@@ -273,7 +279,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
 
     <details class="card" id="getlist">
       <summary>Get your games list</summary>
-      <p>Do this once on a computer, in Chrome or Edge. Each option is a bookmark that reads a Steam page you already have open and saves a file to your Downloads. Nothing is sent anywhere. Use one or both.</p>
+      <p>Do this once on a computer, in Chrome or Edge. Each option is a bookmark that works on a Steam page you already have open and saves a file to your Downloads. Nothing is sent anywhere. Use option 1, option 2, or both; option 3 adds your wishlist.</p>
       <div class="option">
         <b class="title">Option 1: games and playtime</b>
         <p>Gives every game with your playtime. Needs your Steam games page, which works for your own account even if it's private.</p>
@@ -296,6 +302,18 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
           <li>Add it as a bookmark the same way, named <b>Get my Steam licenses</b>.</li>
           <li>Open <span class="path">store.steampowered.com/account/licenses/</span> and sign in if asked.</li>
           <li>Click the bookmark. It saves <code>steam-licenses.json</code>.</li>
+        </ol>
+      </div>
+      <div class="option">
+        <b class="title">Option 3: your wishlist</b>
+        <p>Shows which games on your Steam wishlist could run on your device, before you buy them. Open it with your games file, or on its own. The file holds only the games' Steam numbers; games outside Pocket Library's list show as Unknown.</p>
+        <ol class="steps">
+          <li>Copy this code:
+            <textarea id="bm-wishlist" class="codebox" readonly rows="4" aria-label="Bookmark code, option 3">javascript:(async () =&gt; { const help = &#x27;Open store.steampowered.com while signed in to Steam, then click this bookmark again.&#x27;; function save(fileName, data) { const link = document.createElement(&#x27;a&#x27;); link.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: &#x27;application/json&#x27; })); link.download = fileName; document.body.appendChild(link); link.click(); link.remove(); } try { if (location.hostname !== &#x27;store.steampowered.com&#x27;) { throw new Error(&#x27;not on the store&#x27;); } const response = await fetch(&#x27;/dynamicstore/userdata/&#x27;, { credentials: &#x27;same-origin&#x27;, cache: &#x27;no-store&#x27; }); const data = await response.json(); const wishlist = [...new Set((data.rgWishlist || []).map(String))]; if (!wishlist.length) { alert(&#x27;No wishlist found. Your wishlist may be empty, or you may not be signed in. &#x27; + help); return; } save(&#x27;steam-wishlist.json&#x27;, { source: &#x27;pocket-library&#x27;, kind: &#x27;wishlist&#x27;, saved: new Date().toISOString(), wishlist: wishlist }); } catch (err) { alert(help); } })();</textarea>
+            <div class="btnrow"><button class="btn" type="button" data-copy="bm-wishlist">Copy code</button><span class="status" data-copied="bm-wishlist"></span></div></li>
+          <li>Add it as a bookmark the same way, named <b>Get my Steam wishlist</b>.</li>
+          <li>Open <span class="path">store.steampowered.com</span> and sign in if asked.</li>
+          <li>Click the bookmark. It saves <code>steam-wishlist.json</code>.</li>
         </ol>
       </div>
       <p class="status">Collections are optional: they're in <code>cloud-storage-namespace-1.json</code> in your Steam folder, under <span class="path">userdata\<i>your number</i>\config\cloudstorage</span>.</p>
@@ -455,6 +473,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       return raw.some(row => Array.isArray(row) && String(row[0]).startsWith('user-collections.')) ? 'collections' : '';
     }
     if (!raw || typeof raw !== 'object') return '';
+    if (raw.kind === 'wishlist' || Array.isArray(raw.wishlist)) return 'wishlist';
     if (raw.kind === 'licenses' || Array.isArray(raw.licenses)) return 'licenses';
     if (raw.kind === 'games' || Array.isArray(raw.games) || (raw.response && Array.isArray(raw.response.games))) return 'games';
     return '';
@@ -467,6 +486,10 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       name: String(row.name || ''),
       minutes: Number(row.minutes != null ? row.minutes : row.playtime_forever) || 0,
     }));
+  }
+
+  function wishlistFrom(raw) {
+    return [...new Set(raw.wishlist.filter(app => app != null).map(String))];
   }
 
   function licensesFrom(raw) {
@@ -536,6 +559,13 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     });
     return { games, collections, unmatched };
   }
+
+  // Wishlisted games, rated like owned ones, leaving out any already in the library.
+  function rateWishlist(wishlist, ratings, owned) {
+    const have = new Set((owned || []).map(g => String(g.appid)));
+    const rows = (wishlist || []).filter(app => !have.has(String(app))).map(app => ({ appid: String(app), name: '', minutes: 0 }));
+    return rateLibrary({ games: rows, licenses: null, collections: null }, ratings).games;
+  }
   // ---- matching: end --------------------------------------------------------------
 
   let device = DEVICE_CLASSES.full;
@@ -545,6 +575,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
   let presentGroups = [];
   let hasDates = false;
   let hasChanges = false;
+  let hasWish = false;
   let collectionNames = [];
 
   // ---- always-on parts of the page ---------------------------------------------
@@ -632,7 +663,10 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     DATA = data;
     device = DEVICE_CLASSES[DATA.gpuClass] || DEVICE_CLASSES.full;
     deviceName = DATA.device || DATA.phone || '';  // "phone" in pages made before format 2
-    items = (Array.isArray(DATA.games) ? DATA.games : []).map(toItem);
+    const owned = Array.isArray(DATA.games) ? DATA.games : [];
+    hasWish = Array.isArray(DATA.wish) && DATA.wish.length > 0;
+    if (!hasWish || !owned.length) state.view = hasWish ? 'wish' : 'owned';
+    items = (state.view === 'wish' ? DATA.wish : owned).map(toItem);
     counts = {};
     items.forEach(x => { counts[x.group] = (counts[x.group] || 0) + 1; });
     presentGroups = GROUPS.map(([key]) => key).filter(key => counts[key]);
@@ -654,6 +688,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     const saved = JSON.parse(localStorage.getItem(VIEW_KEY) || 'null');
     if (saved) Object.assign(state, saved, { groups: new Set(saved.groups) });
   } catch (err) { /* storage can be unavailable; defaults are fine */ }
+  state.view = 'owned';  // My games or Wishlist; always starts on My games
 
   function saveView() {
     try {
@@ -681,7 +716,13 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     $('sort-new').hidden = !hasDates;
     $('reports-changed').hidden = !hasChanges;
     const asOf = newestDataDate();
-    $('sub').textContent = (DATA.example ? 'Example · ' : '') + `${items.length.toLocaleString()} games`
+    const owned = Array.isArray(DATA.games) ? DATA.games.length : 0;
+    $('viewseg').hidden = !(hasWish && owned);
+    $('owned-n').textContent = owned.toLocaleString();
+    $('wish-n').textContent = hasWish ? DATA.wish.length.toLocaleString() : '';
+    document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', b.dataset.view === state.view));
+    $('q').placeholder = state.view === 'wish' ? 'Search your wishlist' : 'Search your games';
+    $('sub').textContent = (DATA.example ? 'Example · ' : '') + (state.view === 'wish' ? 'Wishlist · ' : '') + `${items.length.toLocaleString()} games`
       + (asOf ? ` · best effort, data as of ${asOf}` : '');
     const listed = items.filter(x => x.group !== 'other').length || 1;
     $('meter').innerHTML = ['light', 'medium', 'heavy', 'android', 'unknown', 'no']
@@ -852,6 +893,14 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
   document.querySelectorAll('[data-sort]').forEach(b => { b.onclick = () => { state.sort = b.dataset.sort; changed(); }; });
   document.querySelectorAll('[data-input]').forEach(b => { b.onclick = () => { state.input = b.dataset.input; changed(); }; });
   document.querySelectorAll('[data-reports]').forEach(b => { b.onclick = () => { state.reports = b.dataset.reports; changed(); }; });
+  document.querySelectorAll('[data-view]').forEach(b => {
+    b.onclick = () => {
+      if (state.view === b.dataset.view) return;
+      state.view = b.dataset.view;
+      useData(DATA);
+      show();
+    };
+  });
 
   $('fbtn').addEventListener('click', () => {
     const open = $('deck').classList.toggle('open');
@@ -949,19 +998,21 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     $('device').hidden = true;  // the web version shows the device inside "Your library"
     if (!library) { box.hidden = true; box.innerHTML = ''; return; }
     const n = rated.games.length;
+    const wished = (DATA.wish || []).length;
     const d = DEVICE_CLASSES[chosen.gpuClass];
     const devLabel = d ? `${esc(chosen.name || d.title)} · ${d.label}` : 'device not set';
     const notice = library.example
-      ? '<div class="notice"><b>Example library.</b> About 100 well-known games with made-up playtime, dates, and collections, to show how the page works. These aren\'t anyone\'s real games.'
+      ? '<div class="notice"><b>Example library.</b> About 100 well-known games with made-up playtime, dates, collections, and wishlist, to show how the page works. These aren\'t anyone\'s real games.'
         + '<div class="btnrow" style="margin-top:8px"><button class="btn primary" type="button" data-open-files>Use my own games</button><button class="btn" type="button" data-forget>Back</button></div></div>'
       : '';
     const about = library.example ? ''
-      : `<p>${n.toLocaleString()} games from ${esc(library.files.join(', '))}. Read on this device only, and remembered in this browser until you forget them.`
+      : `<p>${n.toLocaleString()} games${wished ? ` and ${wished.toLocaleString()} more on your wishlist` : ''} from ${esc(library.files.join(', '))}. Read on this device only, and remembered in this browser until you forget them.`
         + (rated.unmatched.length ? ` ${rated.unmatched.length.toLocaleString()} license${rated.unmatched.length === 1 ? '' : 's'} matched no game (bundles, extras, or games not in the list) and ${rated.unmatched.length === 1 ? 'was' : 'were'} left out.` : '')
         + '</p>';
     const actions = library.example ? ''
       : '<div class="btnrow"><button class="btn" type="button" data-open-files>Add or replace files</button><button class="btn" type="button" data-save>Save a copy of this page</button><button class="btn" type="button" data-forget>Forget my library</button></div>';
-    const title = library.example ? 'Device' : `Your library · ${n.toLocaleString()} games`;
+    const title = library.example ? 'Device'
+      : n || !wished ? `Your library · ${n.toLocaleString()} games` : `Your wishlist · ${wished.toLocaleString()} games`;
     box.hidden = false;
     box.innerHTML = notice
       + `<details class="card"${d || library.example ? '' : ' open'}><summary>${title} <span class="sumdev">· ${devLabel}</span></summary>`
@@ -993,6 +1044,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       device: chosen.name, gpuClass: chosen.gpuClass || 'full', chip: '', gpu: '',
       updated: data.updated || '', sources: data.sources || {}, changes: data.changes || null,
       collections: rated.collections, games: rated.games, example: Boolean(library.example),
+      wish: rateWishlist(library.wishlist, data.games || {}, rated.games),
     });
     $('web-intro').hidden = true;
     $('getlist').open = false;
@@ -1004,8 +1056,8 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
   }
 
   async function readFiles(files) {
-    const found = { games: null, licenses: null, collections: null };
-    const names = { games: '', licenses: '', collections: '' };
+    const found = { games: null, licenses: null, collections: null, wishlist: null };
+    const names = { games: '', licenses: '', collections: '', wishlist: '' };
     const problems = [];
     for (const file of files) {
       let raw;
@@ -1019,21 +1071,24 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       if (kind === 'games') found.games = gamesFrom(raw);
       else if (kind === 'licenses') found.licenses = licensesFrom(raw);
       else if (kind === 'collections') found.collections = collectionsFrom(raw);
-      else { problems.push(`${file.name} isn't a Steam games, licenses, or collections file`); continue; }
+      else if (kind === 'wishlist') found.wishlist = wishlistFrom(raw);
+      else { problems.push(`${file.name} isn't a Steam games, licenses, collections, or wishlist file`); continue; }
       names[kind] = file.name;
     }
-    if (!found.games && !found.licenses && !found.collections) {
+    if (!found.games && !found.licenses && !found.collections && !found.wishlist) {
       setStatus(problems.length ? `Nothing read: ${problems.join('; ')}.` : 'No files chosen.');
       return;
     }
-    const keep = library && !library.example ? library : { games: null, licenses: null, collections: null, fileNames: {} };
+    const keep = library && !library.example ? library : { games: null, licenses: null, collections: null, wishlist: null, fileNames: {} };
     const fileNames = Object.assign({}, keep.fileNames || {});
     Object.keys(found).forEach(k => { if (found[k]) { keep[k] = found[k]; fileNames[k] = names[k]; } });
-    if (!keep.games && !keep.licenses) {
+    if (!keep.games && !keep.licenses && !keep.wishlist) {
       setStatus(`Read ${names.collections}. Now open steam-games.json or steam-licenses.json too: collections alone have no games.`);
       return;
     }
-    library = { games: keep.games, licenses: keep.licenses, collections: keep.collections, fileNames,
+    if (found.wishlist) state.view = 'wish';
+    else if (found.games || found.licenses) state.view = 'owned';
+    library = { games: keep.games, licenses: keep.licenses, collections: keep.collections, wishlist: keep.wishlist || null, fileNames,
       files: Object.values(fileNames).filter(Boolean), example: false };
     store();
     await rebuild();
@@ -1045,7 +1100,8 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     if (button) button.disabled = true;
     try {
       const example = await getJson(BASE.exampleUrl);
-      library = { games: gamesFrom(example), licenses: licensesFrom(example), collections: example.collections, files: [], example: true };
+      library = { games: gamesFrom(example), licenses: licensesFrom(example), collections: example.collections,
+        wishlist: Array.isArray(example.wishlist) ? wishlistFrom(example) : null, files: [], example: true };
       await rebuild();
       window.scrollTo({ top: 0 });
     } catch (err) {

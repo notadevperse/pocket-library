@@ -6,6 +6,7 @@ What changed in each version of Pocket Library. Dates are when the version was p
 
 - **What changed this month.** Each game that changed in the latest monthly data says so, for example "Changed in the Nov 2026 data: GameNative: works (was mixed)". The **Changed lately** filter shows only those games.
 - The monthly pull request now lists what changed in plain words: which games got better or worse reports, first verdicts, and new weights or statuses.
+- **Your wishlist.** A third bookmark saves the games on your Steam wishlist. Open the file with your games (or on its own), and **My games** and **Wishlist** at the top switch between them, so you can see what would run on your device before you buy it. The example library has a short wishlist too.
 - **Better input labels.** A fifth open dataset, the Steam Games Dataset (MIT), says whether each game supports a controller and how players tag it. A Controller label that wasn't checked by hand becomes Touch for card, turn-based, point-and-click, and similar games, and Touch OK for games with no controller support. It never changes a weight or status.
 
 ## Version 4.1 (October 23, 2026)

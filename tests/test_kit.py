@@ -193,6 +193,15 @@ class Build(unittest.TestCase):
         self.assertEqual(data['sources'], {'protondb': '2026-10-01'})
         self.assertEqual(data['changes']['games'], {'620': 'GameNative: works (was mixed)'})
 
+    def test_wishlist(self):
+        games = self.write('g.json', {'games': [{'appid': 620, 'name': 'Portal 2', 'minutes': 0}]})
+        wishlist = self.write('w.json', {'kind': 'wishlist', 'wishlist': ['620', '730', '99']})
+        data = self.build('--games', games, '--wishlist', wishlist)
+        self.assertEqual([(g['appid'], g['status']) for g in data['wish']], [('730', 'no'), ('99', '')])
+        again = os.path.join(self.dir, 'again.html')
+        run('build.py', '--page', os.path.join(self.dir, 'page.html'), '--out', again, '--ratings', self.ratings)
+        self.assertEqual(len(read_page(again)['wish']), 2)
+
     def test_licenses_only(self):
         lic = self.write('l.json', {'licenses': [{'name': 'Portal 2', 'date': '2022-03-21'}, {'name': 'Some Bundle', 'date': '2020-01-01'}]})
         data = self.build('--licenses', lic)
@@ -252,6 +261,7 @@ assert.strictEqual(fileKind({ kind: 'games', games: [] }), 'games');
 assert.strictEqual(fileKind({ response: { games: [] } }), 'games');
 assert.strictEqual(fileKind({ kind: 'licenses', licenses: [] }), 'licenses');
 assert.strictEqual(fileKind([['user-collections.uc-1', {}]]), 'collections');
+assert.strictEqual(fileKind({ kind: 'wishlist', wishlist: [] }), 'wishlist');
 assert.strictEqual(fileKind({ hello: 1 }), '');
 assert.strictEqual(fileKind([1, 2]), '');
 
@@ -262,6 +272,10 @@ assert.deepStrictEqual([out['620'].weight, out['620'].hours, out['620'].linux], 
 assert.deepStrictEqual([out['99'].weight, out['99'].touch, out['99'].basis, out['99'].name], ['unknown', 'c', '', 'Other']);
 // Steam's own API format works too
 assert.strictEqual(gamesFrom({ response: { games: [{ appid: 620, playtime_forever: 60 }] } })[0].minutes, 60);
+
+// Wishlist: rated by app ID, games already owned left out, unknown ones still listed
+const wish = rateWishlist(wishlistFrom({ wishlist: ['620', 730, '730', '555'] }), ratings, [{ appid: '620' }]);
+assert.deepStrictEqual(wish.map(g => [g.appid, g.status, g.name]), [['730', 'no', 'Counter-Strike 2'], ['555', '', 'App 555']]);
 
 // Licenses only: matched to app IDs by name; bundles are left out and counted
 let result = rateLibrary({ games: null, licenses: licensesFrom({ licenses: [

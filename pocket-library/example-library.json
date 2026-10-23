@@ -1,7 +1,7 @@
 {
  "source": "pocket-library",
  "kind": "example",
- "about": "An example library of well-known games with made-up playtime, dates and collections. Not anyone's real games.",
+ "about": "An example library of well-known games with made-up playtime, dates, collections, and wishlist. Not anyone's real games.",
  "games": [
   {
    "appid": 620,
@@ -941,5 +941,15 @@
    "945360",
    "268910"
   ]
- }
+ },
+ "wishlist": [
+  "1030300",
+  "2161700",
+  "1627720",
+  "1903340",
+  "1623730",
+  "2001120",
+  "2358720",
+  "2767030"
+ ]
 }

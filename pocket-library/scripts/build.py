@@ -18,6 +18,7 @@ Inputs
   --licenses     steam-licenses.json from bookmark 2: adds the date each game was added.
                  Without --games, it is also the games list, matched to app IDs by name.
   --collections  Steam's cloud-storage-namespace-1.json
+  --wishlist     steam-wishlist.json from bookmark 3: wishlisted games, shown under Wishlist
   --ratings      ratings.json (the kit's base ratings, format 1 or 2)
   --extra        entries that win over everything else (evidence.py output, hand ratings)
   --apps         [{"name", "version", "date", "note"}], merged into the page's apps by name
@@ -160,7 +161,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--page', required=True)
     ap.add_argument('--out', required=True)
-    for name in ('from-page', 'games', 'licenses', 'collections', 'ratings', 'extra', 'apps', 'chip', 'gpu', 'updated'):
+    for name in ('from-page', 'games', 'licenses', 'collections', 'wishlist', 'ratings', 'extra', 'apps', 'chip', 'gpu', 'updated'):
         ap.add_argument('--' + name)
     ap.add_argument('--device', '--phone', dest='device')
     ap.add_argument('--gpu-class', choices=['full', 'limited', 'other'])
@@ -173,10 +174,12 @@ def main():
     if 'phone' in data:  # format 1 pages
         data.setdefault('device', data.pop('phone'))
     old_games = data.get('games', [])
+    old_wish = data.get('wish', [])
     if a.from_page:
         with open(a.from_page, encoding='utf-8') as f:
             source = page_data(f.read())
         old_games = source.get('games', [])
+        old_wish = source.get('wish', [])
         for key in ('chip', 'gpu', 'gpuClass', 'collections', 'updated'):
             if source.get(key):
                 data[key] = source[key]
@@ -193,6 +196,14 @@ def main():
     if a.licenses:
         games, unmatched = apply_licenses(games, load_json(a.licenses).get('licenses', []), base)
     apply_ratings(games, base, extra)
+    if a.wishlist:
+        wish = [dict(R.blank(), appid=str(app), hours=0, added='', collections=[])
+                for app in dict.fromkeys(load_json(a.wishlist).get('wishlist', []))]
+    else:
+        wish = [page_game(g) for g in old_wish]
+    owned = {g['appid'] for g in games}
+    wish = [g for g in wish if g['appid'] not in owned]
+    apply_ratings(wish, base, extra)
     if a.collections:
         data['collections'] = apply_collections(games, a.collections)
     if a.apps:
@@ -208,6 +219,10 @@ def main():
     if meta.get('changes'):
         data['changes'] = meta['changes']
     data['games'] = [{k: g[k] for k in ('appid', 'hours', 'added', 'collections') + R.FIELDS} for g in games]
+    if wish:
+        data['wish'] = [{k: g[k] for k in ('appid', 'hours', 'added', 'collections') + R.FIELDS} for g in wish]
+    else:
+        data.pop('wish', None)
 
     blob = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
     html = PAGE_DATA.sub(lambda m: m.group(1) + blob + m.group(3), html, count=1)
@@ -218,7 +233,7 @@ def main():
     for g in games:
         group = g['status'] or g['weight']
         groups[group] = groups.get(group, 0) + 1
-    print(f'{len(games)} games; {groups}; collections: {len(data.get("collections", []))}')
+    print(f'{len(games)} games; {groups}; collections: {len(data.get("collections", []))}; wishlist: {len(wish)}')
     unknown = [g['name'] for g in games if g['weight'] == 'unknown' and not g['status']]
     if unknown:
         print(f'{len(unknown)} with unknown weight, e.g.: ' + '; '.join(unknown[:15]))
