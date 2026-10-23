@@ -63,7 +63,7 @@ javascript:(async () => { const help = 'Open store.steampowered.com while signed
 3. Open `store.steampowered.com` and sign in if asked.
 4. Click the bookmark. It saves `steam-wishlist.json`.
 
-**Option 4: your GOG games.** Adds the games in your GOG library, matched to Pocket Library's list by name and tagged GOG. A game you own on both stores shows once. DroidDeck and GameNative can run GOG games; GameHub Lite can't yet. It asks GOG for your own library, 100 games to a page, with a short pause between pages. GOG has no playtime to share, and games whose names don't match show as Unknown.
+**Option 4: your GOG games.** Adds the games in your GOG library, matched to Pocket Library's list by name and tagged GOG. A game you own on both stores shows once. DroidDeck and GameNative can sign in to GOG and load your library. GameHub Lite's GOG support isn't documented, so it isn't suggested for games you own only on GOG. It asks GOG for your own library, 100 games to a page, with a short pause between pages. GOG has no playtime to share, and games whose names don't match show as Unknown.
 
 1. Copy this code:
 

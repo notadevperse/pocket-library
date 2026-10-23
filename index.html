@@ -333,7 +333,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       </div>
       <div class="option">
         <b class="title">Option 4: your GOG games</b>
-        <p>Adds the games in your GOG library, matched to Pocket Library's list by name and tagged GOG. A game you own on both stores shows once. DroidDeck and GameNative can run GOG games; GameHub Lite can't yet. GOG has no playtime to share, and games whose names don't match show as Unknown.</p>
+        <p>Adds the games in your GOG library, matched to Pocket Library's list by name and tagged GOG. A game you own on both stores shows once. DroidDeck and GameNative can sign in to GOG and load your library. GameHub Lite's GOG support isn't documented, so it isn't suggested for games you own only on GOG. GOG has no playtime to share, and games whose names don't match show as Unknown.</p>
         <ol class="steps">
           <li>Copy this code:
             <textarea id="bm-gog" class="codebox" readonly rows="4" aria-label="Bookmark code, option 4">javascript:(async () =&gt; { const help = &#x27;Open www.gog.com while signed in to GOG, then click this bookmark again.&#x27;; const pauseMs = 400; const maxPages = 100; function save(fileName, data) { const link = document.createElement(&#x27;a&#x27;); link.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: &#x27;application/json&#x27; })); link.download = fileName; document.body.appendChild(link); link.click(); link.remove(); } if (location.hostname !== &#x27;www.gog.com&#x27;) { alert(help); return; } let games = []; try { for (let page = 1; page &lt;= maxPages; page++) { if (page &gt; 1) { await new Promise(done =&gt; setTimeout(done, pauseMs)); } const response = await fetch(&#x27;/account/getFilteredProducts?mediaType=1&amp;page=&#x27; + page, { credentials: &#x27;same-origin&#x27; }); const data = await response.json(); games = games.concat((data.products || []).map(p =&gt; ({ id: String(p.id), name: String(p.title || &#x27;&#x27;) }))); if (!data.totalPages || page &gt;= data.totalPages) { break; } } } catch (err) { alert(help); return; } if (!games.length) { alert(&#x27;No GOG games found. Your library may be empty, or you may not be signed in. &#x27; + help); return; } save(&#x27;gog-games.json&#x27;, { source: &#x27;pocket-library&#x27;, kind: &#x27;gog&#x27;, saved: new Date().toISOString(), games: games }); })();</textarea>
@@ -471,7 +471,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
   };
   const ONE_STEP_HEAVIER = { medium: 'heavy', heavy: 'no' };
   const APP_FOR_STATUS = { android: 'Google Play version', no: 'PC or cloud' };
-  // GOG games: DroidDeck and GameNative load GOG libraries; GameHub Lite doesn't.
+  // GOG games: DroidDeck and GameNative load GOG libraries; GameHub Lite's GOG support isn't documented.
   const GOG_APPS = { full: 'DroidDeck – GameNative', limited: 'GameNative', other: 'GameNative' };
   const TOUCH_LABEL = { t: 'Touch', o: 'Touch OK', c: 'Controller' };
   const REPORTS = {

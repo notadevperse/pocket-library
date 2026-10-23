@@ -31,6 +31,7 @@ ORDER = {'gamenative': ('works', 'mixed', 'first-run', 'broken'),
          'anticheat': ('works', 'blocked')}
 GROUP = {'light': 'Light', 'medium': 'Medium', 'heavy': 'Heavy', 'unknown': 'Unknown',
          'android': 'Android app', 'no': 'Not on Android', 'other': 'Not games'}
+TOUCH = {'t': 'Touch', 'o': 'Touch OK', 'c': 'Controller'}
 NAMES_SHOWN = 15
 
 
@@ -68,7 +69,7 @@ def compare(old, new):
         if parts:
             notes[app] = parts
         if before['touch'] != e['touch']:
-            sections['Input label changed'].append(e['name'])
+            sections[f'Input label now {TOUCH[e["touch"]]} (was {TOUCH[before["touch"]]})'].append(e['name'])
     for app, e in old.items():
         if app not in new:
             sections['Taken off the list'].append(e['name'])

@@ -153,7 +153,7 @@ class Changes(unittest.TestCase):
             '2': 'Now Not on Android (was Medium); ProtonDB: no verdict now (was runs)',
             '4': 'New to the list'}})
         for line in ('**3 games changed.**', '**GameNative: better** (1): Alpha', '**Taken off the list** (1): Gone',
-                     '**Input label changed** (1): Alpha'):
+                     '**Input label now Touch (was Controller)** (1): Alpha'):
             self.assertIn(line, text)
 
     def test_long_lists_are_cut_short(self):
