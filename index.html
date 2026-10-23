@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Check which of your Steam games can run on an Android phone or handheld with DroidDeck, GameNative, or GameHub Lite. Your files stay on your device.">
+<meta name="description" content="Check which of your Steam and GOG games can run on an Android phone or handheld with DroidDeck, GameNative, or GameHub Lite. Your files stay on your device.">
 <!-- Made by scripts/make_web.py from pocket-library/template.html. Edit the template, then run make_web.py. -->
 <style>body { margin: 0; }</style>
 <title>Pocket Library</title>
@@ -238,7 +238,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       <button type="button" class="fbtn" id="fbtn" aria-expanded="false" aria-controls="filters">Filters</button>
     </div>
     <div class="filters" id="filters">
-    <div class="chips" id="colls" role="group" aria-label="Filter by your Steam collection"></div>
+    <div class="chips" id="colls" role="group" aria-label="Filter by collection"></div>
     <div class="tools">
       <div class="seg" role="group" aria-label="Sort">
         <button type="button" data-sort="weight" aria-pressed="true">Weight</button>
@@ -267,14 +267,14 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
 
     <section class="card" id="intro">
       <h1>Pocket Library</h1>
-      <p>This page is empty until Claude fills it with your Steam library. It shows which of your games can run on an Android phone or handheld with DroidDeck, GameNative, or GameHub Lite, filtered by your Steam collections and playtime.</p>
-      <p>To fill it: get your games list (steps below), start a chat with Claude, attach the file, and say <b>"Fill my Pocket Library. My device is a [your phone or handheld]."</b> Claude looks up its chip and adjusts the ratings for it.</p>
+      <p>This page is empty until Claude fills it with your Steam games, and your GOG games if you have them. It shows which of your games can run on an Android phone or handheld with DroidDeck, GameNative, or GameHub Lite, filtered by your Steam collections and playtime.</p>
+      <p>To fill it: get your games list (steps below), start a chat with Claude, attach the files, and say <b>"Fill my Pocket Library. My device is a [your phone or handheld]."</b> Claude looks up its chip and adjusts the ratings for it.</p>
       <p>Don't use Claude? <a href="https://notadevperse.github.io/pocket-library/" target="_blank" rel="noopener">Open the website instead</a>. It does the same in your browser, and your files stay on your device.</p>
     </section>
 
     <section class="card" id="web-intro" hidden>
       <h1>Pocket Library</h1>
-      <p>Check which of your Steam games can run on an Android phone or handheld with DroidDeck, GameNative, or GameHub Lite, filtered by your Steam collections and playtime.</p>
+      <p>Check which of your Steam and GOG games can run on an Android phone or handheld with DroidDeck, GameNative, or GameHub Lite, filtered by your Steam collections and playtime.</p>
       <p><b>Your files stay on this device.</b> This page reads them in your browser and remembers your library in this browser only. Nothing is uploaded, and there's no account, no tracking, and no AI involved.</p>
       <div class="option">
         <b class="title">1. Your device</b>
@@ -282,7 +282,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       </div>
       <div class="option">
         <b class="title">2. Your games</b>
-        <p>Open <code>steam-games.json</code> or <code>steam-licenses.json</code> (or both), and your collections, wishlist, and GOG files if you want them. The steps under <b>Get your games list</b> below make them. You can also drop the files onto this page.</p>
+        <p>Open your Steam games (<code>steam-games.json</code>, <code>steam-licenses.json</code>, or both), your GOG games (<code>gog-games.json</code>), or all of them, plus your Steam collections and wishlist if you want them. The steps under <b>Get your games list</b> below make them. You can also drop the files onto this page.</p>
         <div class="btnrow">
           <button class="btn primary" type="button" data-open-files>Open my files</button>
           <button class="btn" type="button" data-example>Try an example library</button>
@@ -296,7 +296,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
 
     <details class="card" id="lookup" hidden>
       <summary>Look up any game</summary>
-      <p>Search every game with a ProtonDB report, whether you own it or not. Type a name, a Steam app ID, or paste a Steam store link. Each result says how many ProtonDB reports it's based on, so you can judge for yourself. The list comes from ProtonDB reports (ODbL) and the other sources credited at the bottom of this page.</p>
+      <p>Search every game with a ProtonDB report, whether you own it or not. Type a name, a Steam app ID, or paste a Steam store link. GOG games show up by name when they're also sold on Steam. Each result says how many ProtonDB reports it's based on, so you can judge for yourself. The list comes from ProtonDB reports (ODbL) and the other sources credited at the bottom of this page.</p>
       <div class="search">
         <input id="lq" type="search" placeholder="Search all games" autocomplete="off" aria-label="Look up any game">
         <button id="lclear" type="button" aria-label="Clear search" hidden>×</button>
@@ -363,7 +363,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       <summary>Commands for Claude</summary>
       <p>Attach the files each command needs. With the Pocket Library skill installed, Claude knows the rest. For updates, include this page's link so Claude updates it instead of making a new one.</p>
       <ol class="steps">
-        <li><b>First fill.</b> Attach <code>steam-games.json</code> or <code>steam-licenses.json</code> (or both), and optionally <code>cloud-storage-namespace-1.json</code>.
+        <li><b>First fill.</b> Attach <code>steam-games.json</code> or <code>steam-licenses.json</code> (or both), and optionally <code>gog-games.json</code>, <code>steam-wishlist.json</code>, and <code>cloud-storage-namespace-1.json</code>.
           <q>Fill my Pocket Library. My device is a [phone or handheld].</q></li>
         <li><b>New device.</b>
           <q>I have a new device, a [phone or handheld]. Update my Pocket Library.</q></li>
@@ -371,6 +371,10 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
           <q>Update my Pocket Library games.</q></li>
         <li><b>Collections.</b> Attach a fresh <code>cloud-storage-namespace-1.json</code>.
           <q>Update my Pocket Library collections.</q></li>
+        <li><b>Wishlist.</b> Attach a fresh <code>steam-wishlist.json</code>.
+          <q>Update my Pocket Library wishlist.</q></li>
+        <li><b>GOG games.</b> Attach a fresh <code>gog-games.json</code>.
+          <q>Update my Pocket Library GOG games.</q></li>
         <li><b>The three apps.</b>
           <q>Check the latest DroidDeck, GameNative, and GameHub Lite releases and update my Pocket Library.</q></li>
         <li><b>Compatibility.</b>
@@ -382,7 +386,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
 
     <details class="card" id="guide">
       <summary>How to play these on Android</summary>
-      <p id="deviceNote">These free apps run your PC games on an Android phone or handheld itself, with no streaming from a PC. They use compatibility layers that let the Windows version of a game run there: DroidDeck runs Valve's own Steam client and Proton inside a small Linux system, much like a Steam Deck; GameNative uses Proton or Wine; GameHub Lite uses Wine. They work best on a recent Snapdragon chip (Snapdragon 8 Gen 2 or newer, as in many flagship phones, the AYN Odin 2, and the AYN Thor).</p>
+      <p id="deviceNote">These free apps run your PC games on an Android phone or handheld itself, with no streaming from a PC. They use compatibility layers that let the Windows version of a game run there: DroidDeck runs Valve's own Steam client and Proton inside a small Linux system, much like a Steam Deck; GameNative uses Proton or Wine; GameHub Lite uses Wine. DroidDeck and GameNative can also sign in to GOG and load your GOG games. They work best on a recent Snapdragon chip (Snapdragon 8 Gen 2 or newer, as in many flagship phones, the AYN Odin 2, and the AYN Thor).</p>
       <h2>The three apps</h2>
       <div class="apps" id="apps"></div>
       <h2>Tips</h2>
@@ -417,6 +421,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       <ul>
         <li><b>Touch / Touch OK / Controller</b>: how well it plays without a gamepad. A note, not a rule. Where the Steam Games Dataset has the game, it comes from whether the game supports a controller and from its player tags.</li>
         <li><b>Heads-up</b>: an extra hurdle, like a publisher launcher (EA, Ubisoft, Rockstar).</li>
+        <li><b>GOG</b>: games from your GOG library carry a GOG tag, which you can pick under Filters, next to your collections. A game you own on both stores shows once. For a game you own only on GOG, the page suggests DroidDeck or GameNative, which load GOG libraries; GameHub Lite's GOG support isn't documented. GOG games are matched to the list by name, so a game sold only on GOG usually shows as Unknown.</li>
         <li><b>Changed</b>: what changed for the game in the latest monthly data, such as a new GameNative verdict. "Changed lately" under Filters shows only those games.</li>
         <li><b>Based on</b>: the data behind the entry: Steam's minimum requirements, ProtonDB, GameNative, the anti-cheat list, or a check by hand. "Estimate only" means there was no data.</li>
       </ul>
@@ -424,7 +429,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     </details>
 
     <div id="out"></div>
-    <footer id="foot">Pocket Library by <a href="https://github.com/notadevperse/pocket-library" target="_blank" rel="noopener">notadevperse</a>. Best effort; entries may be wrong. Not affiliated with Valve, Steam, or any of the apps listed. Data from <a href="https://www.protondb.com" target="_blank" rel="noopener">ProtonDB</a> (ODbL), <a href="https://github.com/GameNative/gamenative-compat" target="_blank" rel="noopener">GameNative</a>, <a href="https://pcgamebenchmarks.com" target="_blank" rel="noopener">PCGameBenchmarks</a> (CC BY 4.0), and <a href="https://areweanticheatyet.com" target="_blank" rel="noopener">AreWeAntiCheatYet</a> (MIT), and the <a href="https://huggingface.co/datasets/FronkonGames/steam-games-dataset" target="_blank" rel="noopener">Steam Games Dataset</a> (MIT). Thank you to everyone who contributes to them.<span id="foot-web"></span></footer>
+    <footer id="foot">Pocket Library by <a href="https://github.com/notadevperse/pocket-library" target="_blank" rel="noopener">notadevperse</a>. Best effort; entries may be wrong. Not affiliated with Valve, Steam, GOG, or any of the apps listed. Data from <a href="https://www.protondb.com" target="_blank" rel="noopener">ProtonDB</a> (ODbL), <a href="https://github.com/GameNative/gamenative-compat" target="_blank" rel="noopener">GameNative</a>, <a href="https://pcgamebenchmarks.com" target="_blank" rel="noopener">PCGameBenchmarks</a> (CC BY 4.0), and <a href="https://areweanticheatyet.com" target="_blank" rel="noopener">AreWeAntiCheatYet</a> (MIT), and the <a href="https://huggingface.co/datasets/FronkonGames/steam-games-dataset" target="_blank" rel="noopener">Steam Games Dataset</a> (MIT). Thank you to everyone who contributes to them.<span id="foot-web"></span></footer>
   </div>
 </main>
 
@@ -703,7 +708,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     const label = deviceName || device.title;
     $('deviceNote').textContent = `Entries on this page are for a ${label}${spec ? ' (' + spec + ')' : ''}. `
       + 'These free apps run PC games on it without streaming from a PC. They use compatibility layers that let the Windows version of a game run there: '
-      + 'DroidDeck runs Valve\'s own Steam client and Proton inside a small Linux system, much like a Steam Deck; GameNative uses Proton or Wine; GameHub Lite uses Wine.';
+      + 'DroidDeck runs Valve\'s own Steam client and Proton inside a small Linux system, much like a Steam Deck; GameNative uses Proton or Wine; GameHub Lite uses Wine. DroidDeck and GameNative can also sign in to GOG and load your GOG games.';
     card.hidden = false;
     card.className = 'card device dev-' + (DEVICE_CLASSES[DATA.gpuClass] ? DATA.gpuClass : 'full');
     card.innerHTML = `<div class="dev-row"><b>${esc(label)}</b><span class="pill">${device.label}</span></div>`

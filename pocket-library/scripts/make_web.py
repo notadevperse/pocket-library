@@ -39,7 +39,7 @@ HEAD = '''<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Check which of your Steam games can run on an Android phone or handheld with DroidDeck, GameNative, or GameHub Lite. Your files stay on your device.">
+<meta name="description" content="Check which of your Steam and GOG games can run on an Android phone or handheld with DroidDeck, GameNative, or GameHub Lite. Your files stay on your device.">
 <!-- Made by scripts/make_web.py from pocket-library/template.html. Edit the template, then run make_web.py. -->
 <style>body { margin: 0; }</style>
 '''

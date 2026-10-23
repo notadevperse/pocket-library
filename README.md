@@ -2,9 +2,9 @@
 
 By [notadevperse](https://github.com/notadevperse) · [github.com/notadevperse/pocket-library](https://github.com/notadevperse/pocket-library)
 
-Check which of your Steam games you can play on an Android phone or handheld (an AYN Odin or Thor, a Retroid Pocket, an Anbernic, and so on) with **DroidDeck**, **GameNative**, or **GameHub Lite**. You get a page with every game in your library: how demanding it is, what players report, and how well it plays with touch, filterable by your Steam collections and playtime.
+Check which of your Steam and GOG games you can play on an Android phone or handheld (an AYN Odin or Thor, a Retroid Pocket, an Anbernic, and so on) with **DroidDeck**, **GameNative**, or **GameHub Lite**. You get a page with every game in your library: how demanding it is, what players report, and how well it plays with touch, filterable by your Steam collections and playtime. Games you own on GOG are tagged GOG.
 
-**Try it: [notadevperse.github.io/pocket-library](https://notadevperse.github.io/pocket-library/)**. Tap **Try an example library** to see it straight away, or open your own Steam files.
+**Try it: [notadevperse.github.io/pocket-library](https://notadevperse.github.io/pocket-library/)**. Tap **Try an example library** to see it straight away, or open your own Steam and GOG files.
 
 <p>
 <img src="screenshots/example-phone.png" alt="The example library on a phone" width="300">
@@ -89,13 +89,13 @@ If there are several numbered folders, use the newest.
 
 1. Go to [notadevperse.github.io/pocket-library](https://notadevperse.github.io/pocket-library/).
 2. Pick your device type: recent Snapdragon, older Snapdragon, or not Snapdragon. Not sure? Find your model in **Settings → About phone**, then search for its name plus "chipset".
-3. Tap **Open my files** and pick `steam-games.json` and/or `steam-licenses.json`, plus your collections, wishlist, and GOG files if you want them. With a wishlist, **My games** and **Wishlist** at the top switch between the two. You can also drag the files onto the page.
+3. Tap **Open my files** and pick your Steam games (`steam-games.json`, `steam-licenses.json`, or both), your GOG games (`gog-games.json`), or all of them, plus your Steam collections and wishlist if you want them. With a wishlist, **My games** and **Wishlist** at the top switch between the two. You can also drag the files onto the page.
 
 That's it. Next time you open the website, your library is still there. Open new files to update it, or tap **Save a copy of this page** to keep a file that works offline. The game data is refreshed once a month, and games that changed in the latest data say what changed.
 
 To use your library on your phone too, open the files there (send them to yourself), or open the saved copy.
 
-**Look up any game.** The website also has a search box for any game with a ProtonDB report, about 34,500 games, whether you own it or not. It needs no files. Type a name, a Steam app ID, or paste a Steam store link. Each result says how many ProtonDB reports it's based on, because many games have only a few.
+**Look up any game.** The website also has a search box for any game with a ProtonDB report, about 34,500 games, whether you own it or not. It needs no files. Type a name, a Steam app ID, or paste a Steam store link. GOG games show up by name when they're also sold on Steam. Each result says how many ProtonDB reports it's based on, because many games have only a few.
 
 ## Using Claude (optional)
 
@@ -114,9 +114,11 @@ Start a chat, attach the files, and say the line. For updates, include your Pock
 
 | What | Attach | Say |
 |---|---|---|
-| First fill | `steam-games.json` and/or `steam-licenses.json`, collections file (optional) | Fill my Pocket Library. My device is a [phone or handheld]. |
+| First fill | `steam-games.json` and/or `steam-licenses.json`; optionally `gog-games.json`, `steam-wishlist.json`, and the collections file | Fill my Pocket Library. My device is a [phone or handheld]. |
 | New games | a fresh `steam-games.json` or `steam-licenses.json` | Update my Pocket Library games: [link] |
 | Collections | a fresh collections file | Update my Pocket Library collections: [link] |
+| Wishlist | a fresh `steam-wishlist.json` | Update my Pocket Library wishlist: [link] |
+| GOG games | a fresh `gog-games.json` | Update my Pocket Library GOG games: [link] |
 | New device | nothing | I have a new device, a [phone or handheld]. Update my Pocket Library: [link] |
 | The three apps | nothing | Check the latest DroidDeck, GameNative, and GameHub Lite releases and update my Pocket Library: [link] |
 | Compatibility | nothing | Re-check compatibility for my games and update my Pocket Library: [link] |
@@ -135,9 +137,10 @@ Each game gets a **weight**, from Steam's minimum requirements, and separate **r
 - **Reports**: ProtonDB (does it run on Linux PCs?), GameNative (what its players found), and anti-cheat (does it allow Linux?). DroidDeck and GameHub Lite publish no compatibility data, so there are no reports for them yet.
 - **Touch / Touch OK / Controller**: how well it plays without a gamepad.
 - **Heads-up**: a known extra hurdle, like a publisher launcher.
+- **GOG**: a tag on games from your GOG library. A game you own on both stores shows once. For a game you own only on GOG, the page suggests DroidDeck or GameNative, which load GOG libraries.
 - **Based on**: the data behind the entry, or "estimate only".
 
-The list covers 11,064 Steam games: Steam's top sellers, about 2,160 Steam Deck Verified games, and every game that had 5 or more ProtonDB reports as of October 2026. Of these, 10,814 are backed by data. On the website, games outside the list show as Unknown; Claude can judge them for you. **Look up any game** searches a bigger list, every game with at least one ProtonDB report, and gives a ProtonDB verdict from even 1 report, with the count.
+The list covers 11,064 Steam games: Steam's top sellers, about 2,160 Steam Deck Verified games, and every game that had 5 or more ProtonDB reports as of October 2026. Of these, 10,814 are backed by data. GOG games are matched to the list by name, so a game sold only on GOG usually shows as Unknown. On the website, games outside the list show as Unknown; Claude can judge them for you. **Look up any game** searches a bigger list, every game with at least one ProtonDB report, and gives a ProtonDB verdict from even 1 report, with the count.
 
 With Claude, re-checking compatibility downloads about 475 MB of public data, checks your whole library against it in seconds, and has Claude look at the few games the data flags. It never crawls Steam or any app's servers. Each request counts toward your Claude usage limits.
 
@@ -206,4 +209,4 @@ The website bundles [Chakra Petch](https://github.com/m4rc1e/Chakra-Petch) (trim
 
 Pocket Library would be guesswork without these people. Thank you to everyone who writes ProtonDB reports and to the ProtonDB maintainers for publishing them openly; to the GameNative team and every player who rates a game in the app; to PCGameBenchmarks for sharing its requirements data; to the AreWeAntiCheatYet contributors for tracking anti-cheat; to Fronkon Games for the Steam Games Dataset; and to the DroidDeck, GameNative, and GameHub Lite developers for making PC games playable on Android at all. Entries were compiled, and the code written, with help from Claude.
 
-Not affiliated with Anthropic, Valve, Steam, DroidDeck, GameNative, GameHub, GameSir, ProtonDB, PCGameBenchmarks, AreWeAntiCheatYet, or Fronkon Games. Steam is a trademark of Valve Corporation.
+Not affiliated with Anthropic, Valve, Steam, GOG, DroidDeck, GameNative, GameHub, GameSir, ProtonDB, PCGameBenchmarks, AreWeAntiCheatYet, or Fronkon Games. Steam is a trademark of Valve Corporation, and GOG is a trademark of GOG sp. z o.o.
