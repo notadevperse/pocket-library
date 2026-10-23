@@ -146,9 +146,11 @@ def apply_ratings(games, base, extra):
 
 
 # Stores name editions differently ("Wild Hunt" on GOG, "Wild Hunt — Remastered" on Steam),
-# so GOG games that don't match exactly are matched again without the edition. Same as template.html.
+# so GOG games that don't match exactly are matched again without the edition or a closing note
+# in brackets, like "(1994)" or "(Classic)". Same as template.html.
 EDITION = re.compile(r"\s*[-–—:(]?\s*\b(game of the year|goty|definitive|enhanced|complete|remastered|director'?s cut|deluxe|gold"
                      r"|ultimate|anniversary|special|collector'?s|digital|standard)( edition)?\)?\s*$", re.I)
+BRACKETS = re.compile(r'\s*\([^)]*\)\s*$')
 EDITION_WORD = re.compile(r'\s*[-–—:]?\s*\bedition\s*$', re.I)
 
 
@@ -156,7 +158,7 @@ def without_edition(name):
     out, before = (name or '').replace('™', '').replace('®', '').strip(), None
     while before != out:
         before = out
-        out = EDITION_WORD.sub('', EDITION.sub('', out)).strip()
+        out = EDITION_WORD.sub('', EDITION.sub('', BRACKETS.sub('', out))).strip()
     return simple_name(out)
 
 

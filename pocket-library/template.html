@@ -537,11 +537,12 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
   }
 
   // Stores name editions differently ("Wild Hunt" on GOG, "Wild Hunt — Remastered" on Steam),
-  // so GOG games that don't match exactly are matched again without the edition.
+  // so GOG games that don't match exactly are matched again without the edition or a closing
+  // note in brackets, like "(1994)" or "(Classic)".
   const EDITION = /\s*[-–—:(]?\s*\b(game of the year|goty|definitive|enhanced|complete|remastered|director'?s cut|deluxe|gold|ultimate|anniversary|special|collector'?s|digital|standard)( edition)?\)?\s*$/i;
   function withoutEdition(name) {
     let out = String(name || '').replace(/[™®]/g, '').trim();
-    for (let before = ''; before !== out;) { before = out; out = out.replace(EDITION, '').replace(/\s*[-–—:]?\s*\bedition\s*$/i, '').trim(); }
+    for (let before = ''; before !== out;) { before = out; out = out.replace(/\s*\([^)]*\)\s*$/, '').replace(EDITION, '').replace(/\s*[-–—:]?\s*\bedition\s*$/i, '').trim(); }
     return simpleName(out);
   }
 

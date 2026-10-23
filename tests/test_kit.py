@@ -219,6 +219,7 @@ class Build(unittest.TestCase):
         import build
         self.assertEqual(build.without_edition('The Witcher 3: Wild Hunt - Game of the Year Edition'), 'thewitcher3wildhunt')
         self.assertEqual(build.without_edition('Marigold'), 'marigold')
+        self.assertEqual(build.without_edition('Mafia II (Classic)'), 'mafiaii')
         self.assertEqual(build.without_edition('Fallout: New Vegas Ultimate Edition'), 'falloutnewvegas')
 
     def test_licenses_only(self):
@@ -309,6 +310,7 @@ assert.deepStrictEqual([out['gog-3'].weight, out['gog-3'].name, out['gog-3'].sto
 assert.strictEqual(withoutEdition('The Witcher 3: Wild Hunt — Remastered'), withoutEdition('The Witcher 3: Wild Hunt'));
 assert.strictEqual(withoutEdition('Deus Ex: Game of the Year Edition'), 'deusex');
 assert.strictEqual(withoutEdition('Marigold'), 'marigold');
+assert.strictEqual(withoutEdition('Quake II (Original)'), 'quakeii');
 
 // Licenses only: matched to app IDs by name; bundles are left out and counted
 let result = rateLibrary({ games: null, licenses: licensesFrom({ licenses: [
