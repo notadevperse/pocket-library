@@ -13,7 +13,7 @@ The file sits next to index.html, not in the skill folder, because only the webs
 uses it.
 
 lookup.json:
-    {"format": 1, "updated": "...", "sources": {...},
+    {"format": 1, "license": "...", "updated": "...", "sources": {...},
      "fields": ["appid", "name", ...],
      "games": [["620", "Portal 2", "light", "", "o", "works", "works", "", "spg", 412, 1, "", ""], ...]}
 
@@ -32,6 +32,11 @@ import evidence as E  # noqa: E402
 import ratings as R  # noqa: E402
 
 FORMAT = 1
+# Built mostly from ProtonDB's ODbL data, so the list is shared under the ODbL too.
+LICENSE = ('Open Database License (ODbL) v1.0, https://opendatacommons.org/licenses/odbl/1-0/. '
+           'Built from ProtonDB reports (ODbL), the GameNative worklist, PCGameBenchmarks (CC BY 4.0), '
+           'AreWeAntiCheatYet (MIT), and the Steam Games Dataset (MIT). '
+           'Credits: https://github.com/notadevperse/pocket-library#data-credits')
 FIELDS = ('appid', 'name', 'weight', 'status', 'touch', 'linux', 'gamenative', 'anticheat', 'basis',
           'reports', 'recent', 'note', 'heads')
 
@@ -91,7 +96,7 @@ def main():
         have.add('input')
 
     rows = build(base, req, pdb, gn, ac, inp, titles, recent, have)
-    out = {'format': FORMAT, 'updated': meta.get('updated') or time.strftime('%Y-%m-%d'),
+    out = {'format': FORMAT, 'license': LICENSE, 'updated': meta.get('updated') or time.strftime('%Y-%m-%d'),
            'sources': meta.get('sources', {}), 'fields': list(FIELDS), 'games': rows}
     head = json.dumps({k: v for k, v in out.items() if k != 'games'}, ensure_ascii=False, separators=(',', ':'))
     lines = ',\n'.join(json.dumps(r, ensure_ascii=False, separators=(',', ':')) for r in rows)

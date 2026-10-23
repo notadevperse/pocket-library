@@ -193,9 +193,9 @@ The website bundles [Chakra Petch](https://github.com/m4rc1e/Chakra-Petch) (trim
 
 ### Data credits
 
-`ratings.json` is built partly from these open datasets:
+`ratings.json` and `lookup.json` (the list behind **Look up any game**) are built partly from these open datasets:
 
-- **ProtonDB** report data, released under the [Open Database License (ODbL) v1.0](https://opendatacommons.org/licenses/odbl/1-0/) ([source](https://github.com/bdefore/protondb-data)). Because of this, `ratings.json` is shared under the ODbL as well: you can use and change it freely, as long as you credit the sources and share changed versions under the same license.
+- **ProtonDB** report data, released under the [Open Database License (ODbL) v1.0](https://opendatacommons.org/licenses/odbl/1-0/) ([source](https://github.com/bdefore/protondb-data)). Because of this, `ratings.json` and `lookup.json` are shared under the ODbL as well: you can use and change them freely, as long as you credit the sources and share changed versions under the same license. `lookup.json` is mostly ProtonDB data and says so in its `license` field.
 - **GameNative** compatibility worklist ([source](https://github.com/GameNative/gamenative-compat)), shared for reuse by the GameNative project.
 - **PCGameBenchmarks** system requirements, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) ([pcgamebenchmarks.com](https://pcgamebenchmarks.com)).
 - **AreWeAntiCheatYet** anti-cheat list, MIT License, © Starz0r, Curve ([source](https://github.com/AreWeAntiCheatYet/AreWeAntiCheatYet)).
