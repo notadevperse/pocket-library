@@ -1,11 +1,11 @@
 ---
 name: pocket-library
-description: Build or update a Pocket Library page that shows which of a person's Steam games can run on their Android phone or handheld with DroidDeck, GameNative, or GameHub Lite, with their Steam collections and playtime. Use when the user asks to fill, update, or refresh their Pocket Library, or attaches steam-games.json, steam-licenses.json, steam-wishlist.json, gog-games.json, or cloud-storage-namespace-1.json.
+description: Build or update a Pocket Library page that shows which of a person's Steam and GOG games can run on their Android phone or handheld with DroidDeck, GameNative, or GameHub Lite, with their Steam collections and playtime. Use when the user asks to fill, update, or refresh their Pocket Library, or attaches steam-games.json, steam-licenses.json, steam-wishlist.json, gog-games.json, or cloud-storage-namespace-1.json.
 ---
 
 # Pocket Library
 
-Pocket Library is a single page listing a person's Steam games, each with a weight (Light, Medium, Heavy, Android app, Not on Android, Unknown), reports from public data, a touch marker, the apps to try, playtime, their Steam collections, heads-up notes, and what each entry is based on. This skill fills the blank page with their data and keeps it current. Everything on it is best effort, never a test result; say so.
+Pocket Library is a single page listing a person's Steam games, and their GOG games if they have them, each with a weight (Light, Medium, Heavy, Android app, Not on Android, Unknown), reports from public data, a touch marker, the apps to try, playtime, their Steam collections, heads-up notes, and what each entry is based on. This skill fills the blank page with their data and keeps it current. Everything on it is best effort, never a test result; say so.
 
 Files in this skill:
 - `template.html`: the blank page. Never change its design; only its data block changes.
@@ -17,7 +17,7 @@ Files in this skill:
 - `apps.json`: the three apps' latest versions, refreshed monthly by the project's GitHub check. A starting point for command 4.
 - `example-library.json`, `scripts/make_web.py`, `scripts/check_apps.py`, `scripts/changes.py`, `scripts/make_lookup.py`, `scripts/make_zip.py`: for the project's website and its monthly refresh. You don't need them to fill a page.
 
-The project also runs as a website without Claude (notadevperse.github.io/pocket-library): people open their Steam files there and the page rates them in their browser. A copy saved from the website (with "Save a copy of this page") is a filled page like any other: use it as `--page`.
+The project also runs as a website without Claude (notadevperse.github.io/pocket-library): people open their Steam and GOG files there and the page rates them in their browser. A copy saved from the website (with "Save a copy of this page") is a filled page like any other: use it as `--page`.
 
 ## What the user provides
 

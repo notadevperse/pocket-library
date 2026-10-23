@@ -2,7 +2,12 @@
 
 What changed in each version of Pocket Library. Dates are when the version was published.
 
-## Version 4.3 (October 2026)
+## Version 4.3.1 (October 2026)
+
+- The page, the website, and the README now name GOG wherever they describe your games: the intros, opening your files, the app guide, the legend (a new **GOG** entry), and the footer.
+- **Commands for Claude** now include updating your wishlist and your GOG games.
+
+## Version 4.3 (October 23, 2026)
 
 - **Look up any game.** The website has a new search box for any game with a ProtonDB report, about 34,500 games, three times the main list, whether you own it or not. It needs no files: type a name, a Steam app ID, or paste a Steam store link. Each result shows the weight, reports, and the apps to try on your device, and says how many ProtonDB reports it's based on, so a verdict from 2 reports reads differently from one from 200. The list loads only when you search, and it's rebuilt with each monthly refresh.
 - The search boxes no longer show two clear (×) buttons in Chrome and Edge.
