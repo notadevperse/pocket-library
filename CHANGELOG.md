@@ -2,7 +2,12 @@
 
 What changed in each version of Pocket Library. Dates are when the version was published.
 
-## Version 4.2 (October 2026)
+## Version 4.3 (October 2026)
+
+- **Look up any game.** The website has a new search box for any game with a ProtonDB report, about 34,500 games, three times the main list, whether you own it or not. It needs no files: type a name, a Steam app ID, or paste a Steam store link. Each result shows the weight, reports, and the apps to try on your device, and says how many ProtonDB reports it's based on, so a verdict from 2 reports reads differently from one from 200. The list loads only when you search, and it's rebuilt with each monthly refresh.
+- The search boxes no longer show two clear (×) buttons in Chrome and Edge.
+
+## Version 4.2 (October 23, 2026)
 
 - **What changed this month.** Each game that changed in the latest monthly data says so, for example "Changed in the Nov 2026 data: GameNative: works (was mixed)". The **Changed lately** filter shows only those games.
 - The monthly pull request now lists what changed in plain words: which games got better or worse reports, first verdicts, and new weights or statuses.

@@ -10,8 +10,8 @@ page contacts no other site), app versions from apps.json,
 and settings that turn on the in-browser version
 ("web": true), which reads people's Steam files on their own device and rates them
 against ratings.json. Nothing is sent anywhere. GitHub Pages serves the repository
-as it is, so index.html loads pocket-library/ratings.json and the example library
-straight from this repository.
+as it is, so index.html loads pocket-library/ratings.json, the example library, and
+lookup.json (for "Look up any game") straight from this repository.
 """
 import json
 import os
@@ -58,7 +58,7 @@ def build():
         for app in data['apps']:
             app.update({k: v for k, v in versions.get(app['name'].lower(), {}).items() if k in ('version', 'date', 'note')})
     data.update(web=True, home=HOME, ratingsUrl='pocket-library/ratings.json',
-                exampleUrl='pocket-library/example-library.json')
+                exampleUrl='pocket-library/example-library.json', lookupUrl='lookup.json')
     blob = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
     html = PAGE_DATA.sub(lambda m: m.group(1) + blob + m.group(3), html, count=1)
     # No requests to other sites: the fonts come from fonts/ next to index.html, not Google Fonts.

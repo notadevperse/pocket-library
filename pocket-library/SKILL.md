@@ -15,7 +15,7 @@ Files in this skill:
 - `scripts/fetch-sources.sh`: downloads the public datasets (see Data sources).
 - `scripts/evidence.py`: checks games against those datasets. `--help` lists the inputs; the rules are the settings at the top of the file.
 - `apps.json`: the three apps' latest versions, refreshed monthly by the project's GitHub check. A starting point for command 4.
-- `example-library.json`, `scripts/make_web.py`, `scripts/check_apps.py`, `scripts/changes.py`, `scripts/make_zip.py`: for the project's website and its monthly refresh. You don't need them to fill a page.
+- `example-library.json`, `scripts/make_web.py`, `scripts/check_apps.py`, `scripts/changes.py`, `scripts/make_lookup.py`, `scripts/make_zip.py`: for the project's website and its monthly refresh. You don't need them to fill a page.
 
 The project also runs as a website without Claude (notadevperse.github.io/pocket-library): people open their Steam files there and the page rates them in their browser. A copy saved from the website (with "Save a copy of this page") is a filled page like any other: use it as `--page`.
 

@@ -79,6 +79,8 @@ header.deck .wrap { padding-block: 12px 10px; display: grid; gap: 10px; }
 .search { position: relative; }
 .search input { width: 100%; font: inherit; font-size: 16px; padding: 10px 36px 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
 .search input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }  /* the page has its own × */
+#lout ul.list { margin-top: 2px; }
 .search button { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--muted); font-size: 18px; width: 32px; height: 32px; cursor: pointer; border-radius: 8px; }
 .chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; margin-inline: -4px; padding-inline: 4px; }
 .chips::-webkit-scrollbar { display: none; }
@@ -292,6 +294,17 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     <div id="mine" hidden></div>
     <input type="file" id="files" accept=".json,application/json" multiple hidden>
 
+    <details class="card" id="lookup" hidden>
+      <summary>Look up any game</summary>
+      <p>Search every game with a ProtonDB report, whether you own it or not. Type a name, a Steam app ID, or paste a Steam store link. Each result says how many ProtonDB reports it's based on, so you can judge for yourself. The list comes from ProtonDB reports (ODbL) and the other sources credited at the bottom of this page.</p>
+      <div class="search">
+        <input id="lq" type="search" placeholder="Search all games" autocomplete="off" aria-label="Look up any game">
+        <button id="lclear" type="button" aria-label="Clear search" hidden>×</button>
+      </div>
+      <span class="status" id="lstatus" role="status"></span>
+      <div id="lout"></div>
+    </details>
+
     <details class="card" id="getlist">
       <summary>Get your games list</summary>
       <p>Do this once on a computer, in Chrome or Edge. Each option is a bookmark that works on a Steam or GOG page you already have open and saves a file to your Downloads. Nothing is sent anywhere. Use option 1, option 2, or both; option 3 adds your wishlist, and option 4 your GOG games.</p>
@@ -395,7 +408,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       </ul>
       <h2>Reports: what players found</h2>
       <ul>
-        <li><b>ProtonDB</b>: whether the game runs on Linux PCs, from ProtonDB reports. The Android apps build on the same tools, so a game that fails there usually fails here too.</li>
+        <li><b>ProtonDB</b>: whether the game runs on Linux PCs, from ProtonDB reports. The Android apps build on the same tools, so a game that fails there usually fails here too. A game's list entry needs 5 or more reports for a verdict. The website's <b>Look up any game</b> box gives one from even 1 report and says how many there are.</li>
         <li><b>GameNative</b>: what GameNative players on Snapdragon devices reported, for games with 20 or more ratings.</li>
         <li><b>Anti-cheat</b>: whether the game's anti-cheat allows Linux, from AreWeAntiCheatYet.</li>
         <li>DroidDeck and GameHub Lite don't publish compatibility data yet, so there are no reports for them.</li>
@@ -415,7 +428,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
   </div>
 </main>
 
-<script id="pl-data" type="application/json">{"format":2,"device":"","chip":"","gpu":"","gpuClass":"","updated":"","sources":{},"apps":[{"name":"DroidDeck","repo":"Droid-Deck/DroidDeck","about":"Real Steam in Steam Deck mode. Download the plain .apk.","version":"0.6.0","date":"2026-10-22","note":""},{"name":"GameNative","repo":"utkarshdalal/GameNative","about":"Uses settings other players found for each game.","version":"1.3.0","date":"2026-10-14","note":""},{"name":"GameHub Lite","repo":"Producdevity/gamehub-lite","about":"A privacy-cleaned build of GameHub. Get the plain .apk, not the antutu/ludashi/pubg versions.","version":"5.1.8","date":"2026-07-02","note":""}],"collections":[],"games":[],"web":true,"home":"https://notadevperse.github.io/pocket-library/","ratingsUrl":"pocket-library/ratings.json","exampleUrl":"pocket-library/example-library.json"}</script>
+<script id="pl-data" type="application/json">{"format":2,"device":"","chip":"","gpu":"","gpuClass":"","updated":"","sources":{},"apps":[{"name":"DroidDeck","repo":"Droid-Deck/DroidDeck","about":"Real Steam in Steam Deck mode. Download the plain .apk.","version":"0.6.0","date":"2026-10-22","note":""},{"name":"GameNative","repo":"utkarshdalal/GameNative","about":"Uses settings other players found for each game.","version":"1.3.0","date":"2026-10-14","note":""},{"name":"GameHub Lite","repo":"Producdevity/gamehub-lite","about":"A privacy-cleaned build of GameHub. Get the plain .apk, not the antutu/ludashi/pubg versions.","version":"5.1.8","date":"2026-07-02","note":""}],"collections":[],"games":[],"web":true,"home":"https://notadevperse.github.io/pocket-library/","ratingsUrl":"pocket-library/ratings.json","exampleUrl":"pocket-library/example-library.json","lookupUrl":"lookup.json"}</script>
 <script>
 (function () {
   'use strict';
@@ -724,6 +737,8 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       reports,
       problem: reports.some(([k, v]) => REPORTS[k][v][1] === 'bad'),
       change: String(((DATA.changes || {}).games || {})[game.appid] || ''),
+      protondbReports: Number(game.protondbReports) || 0,  // only in lookups
+      protondbRecent: Boolean(game.protondbRecent),
       collections,
       searchText: (game.name + ' ' + collections.join(' ')).toLowerCase(),
     };
@@ -846,8 +861,12 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       const [text, tone] = REPORTS[k][v];
       return `<span class="rep ${tone}">${REPORTS[k].label}: ${text}</span>`;
     }).join('');
+    const n = x.protondbReports;
+    const label = c => c === 'p' && n
+      ? `ProtonDB, ${n.toLocaleString()} report${n === 1 ? '' : 's'}${x.protondbRecent ? ' from the last two years' : ''}`
+      : BASIS_LABEL[c];
     const basis = x.group === 'other' ? ''
-      : `<div class="basis">Based on: ${x.basis ? x.basis.split('').map(c => BASIS_LABEL[c]).filter(Boolean).join(' · ') : 'estimate only'}</div>`;
+      : `<div class="basis">Based on: ${x.basis ? x.basis.split('').map(label).filter(Boolean).join(' · ') : 'estimate only'}</div>`;
     return `<li class="g t-${x.group}"><span class="stripe"></span><div class="body">`
       + `<div class="name">${gameLink(x)}</div>`
       + `<div class="meta">${meta}</div>`
@@ -1058,6 +1077,76 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     return ratings;
   }
 
+  // ---- look up any game: lookup.json, loaded the first time someone searches ----
+
+  const LOOKUP_SHOWN = 20;
+  let lookup = null;       // {games: [entry], names: [simple name], count}
+  let lookupLoading = null;
+
+  function getLookup() {
+    if (!lookupLoading) {
+      lookupLoading = getJson(BASE.lookupUrl).then(raw => {
+        const at = Object.fromEntries((raw.fields || []).map((k, i) => [k, i]));
+        const games = (raw.games || []).map(row => {
+          const g = blankEntry(row[at.name]);
+          FIELDS.forEach(k => { if (k in at && row[at[k]] != null) g[k] = row[at[k]]; });
+          return Object.assign(g, { appid: String(row[at.appid]), protondbReports: row[at.reports] || 0, protondbRecent: row[at.recent] === 1 });
+        });
+        lookup = { games, names: games.map(g => simpleName(g.name)), count: games.length };
+        return lookup;
+      }).catch(err => { lookupLoading = null; throw err; });
+    }
+    return lookupLoading;
+  }
+
+  // Exact names first, then names that start with the search, then the rest; most reports first within each.
+  function lookupMatches(query) {
+    const id = (/store\.steampowered\.com\/app\/(\d+)/.exec(query) || /^\s*(\d+)\s*$/.exec(query) || [])[1];
+    if (id) return lookup.games.filter(g => g.appid === id);
+    const q = simpleName(query);
+    if (q.length < 2) return [];
+    const exact = [], starts = [], within = [];
+    lookup.names.forEach((name, i) => {
+      if (name === q) exact.push(lookup.games[i]);
+      else if (name.startsWith(q)) starts.push(lookup.games[i]);
+      else if (name.includes(q)) within.push(lookup.games[i]);
+    });
+    return exact.concat(starts, within);
+  }
+
+  async function renderLookup() {
+    const query = $('lq').value;
+    $('lclear').hidden = !query;
+    if (!query.trim()) { $('lout').innerHTML = ''; $('lstatus').textContent = ''; return; }
+    if (!lookup) {
+      $('lstatus').textContent = 'Loading the list of games…';
+      try {
+        await getLookup();
+      } catch (err) {
+        $('lstatus').textContent = "Couldn't load the list of games (lookup.json). Check your connection and try again.";
+        return;
+      }
+      if ($('lq').value !== query) return;  // a newer search is drawing
+    }
+    const found = lookupMatches(query);
+    const all = lookup.count.toLocaleString();
+    if (!found.length) {
+      $('lout').innerHTML = '';
+      $('lstatus').textContent = simpleName(query).length < 2 && !/\d/.test(query)
+        ? 'Type a little more of the name.'
+        : `No match among ${all} games. A game with no ProtonDB reports yet isn't in this list.`;
+      return;
+    }
+    $('lstatus').textContent = found.length > LOOKUP_SHOWN
+      ? `${found.length.toLocaleString()} matches among ${all} games. Showing the ${LOOKUP_SHOWN} with the most reports; type more of the name to narrow it.`
+      : `${found.length} match${found.length === 1 ? '' : 'es'} among ${all} games.`;
+    $('lout').innerHTML = `<ul class="list">${found.slice(0, LOOKUP_SHOWN).map(g => rowHtml(toItem(g))).join('')}</ul>`;
+  }
+
+  $('lq').addEventListener('input', renderLookup);
+  $('lq').addEventListener('focus', () => { getLookup().catch(() => {}); }, { once: true });
+  $('lclear').onclick = () => { $('lq').value = ''; renderLookup(); $('lq').focus(); };
+
   function deviceFieldsHtml(where) {
     const choices = Object.entries(DEVICE_CLASSES).map(([key, d]) =>
       `<label class="choice"><input type="radio" name="devclass-${where}" value="${key}" data-dev-class${chosen.gpuClass === key ? ' checked' : ''}>`
@@ -1105,8 +1194,9 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
       $('web-intro').hidden = false;
       $('getlist').open = true;
       $('mine').hidden = true;
-      useData(Object.assign({}, BASE, { games: [] }));
+      useData(Object.assign({}, BASE, { games: [], gpuClass: chosen.gpuClass }));  // lookups follow the device picked
       show();
+      $('device').hidden = true;
       renderDeviceFields();
       return;
     }
@@ -1193,6 +1283,7 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     const data = Object.assign({}, DATA, { web: false, saved: true, example: false, gpuClass: chosen.gpuClass || 'full' });
     delete data.ratingsUrl;
     delete data.exampleUrl;
+    delete data.lookupUrl;
     const blob = JSON.stringify(data).replace(/<\//g, '<\\/');
     const html = PRISTINE.replace(/(<script id="pl-data" type="application\/json">)[\s\S]*?(<\/script>)/, (m, open, close) => open + blob + close);
     const link = document.createElement('a');
@@ -1231,8 +1322,13 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
     if (e.target.matches('[data-dev-class]')) {
       chosen.gpuClass = e.target.value;
       store();
-      if (library) rebuild().then(() => { const box = $('mine').querySelector('details'); if (box) box.open = true; });
-      else renderDeviceFields();
+      if (library) {
+        rebuild().then(() => { const box = $('mine').querySelector('details'); if (box) box.open = true; renderLookup(); });
+      } else {
+        renderDeviceFields();
+        useData(Object.assign({}, BASE, { games: [], gpuClass: chosen.gpuClass }));
+        renderLookup();
+      }
     }
   });
   document.addEventListener('input', e => {
@@ -1261,6 +1357,8 @@ footer { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
   });
 
   loadStored();
+  $('lookup').hidden = false;
+  $('lookup').open = !library;
   rebuild();
 })();
 </script>
