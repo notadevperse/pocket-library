@@ -126,6 +126,19 @@ class Rules(unittest.TestCase):
             got = evidence.load_input(path, {'1', '2', '3'})
         self.assertEqual(got, {'1': (True, False), '2': (False, True)})
 
+    def test_input_dataset_header_with_joined_columns(self):
+        # The real games.csv names "Discount" and "DLC count" as one column, "DiscountDLC count".
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, 'steam-games.csv')
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write('AppID,Name,Price,DiscountDLC count,Developers,Publishers,Categories,Genres,Tags,Movies\n'
+                        '1,A,9.99,0,0,"Dev","Pub","Single-player,Full controller support","Action","Action,Platformer",""\n'
+                        '2,B,4.99,0,0,"Dev","Pub","Single-player","Strategy","Card Game,Roguelike",""\n'
+                        '3,C,0.0,0,0,"Dev","Pub","Single-player,Partial Controller Support","Indie","Puzzle",""\n'
+                        '4,D,0.0,0,"Dev","Pub","Single-player","Indie","Puzzle",""\n')
+            got = evidence.load_input(path, None)
+        self.assertEqual(got, {'1': (True, False), '2': (False, True), '3': (True, False)})
+
     def test_basis_letters(self):
         new = self.check(R.blank('X'), req=(500, 4, 'X'), pdb=(10, 9), gn='works', ac='works')
         self.assertEqual(new['basis'], 'spga')
