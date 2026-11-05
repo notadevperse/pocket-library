@@ -135,7 +135,7 @@ Each game gets a **weight**, from Steam's minimum requirements, and separate **r
 - **Not on Android**: blocked by anti-cheat, VR only, servers shut down, or far too demanding.
 - **Unknown**: no data yet.
 - **Reports**: ProtonDB (does it run on Linux PCs?), GameNative (what its players found), and anti-cheat (does it allow Linux?). DroidDeck and GameHub Lite publish no compatibility data, so there are no reports for them yet.
-- **Touch / Touch OK / Controller**: how well it plays without a gamepad.
+- **Touch / Touch OK / Controller**: how well it plays without a gamepad. Shooters and racing, fighting, platformer, rhythm, and flight games stay Controller even when Steam lists no controller support, because tapping is a poor way to aim or steer, and the apps can map a gamepad to mouse and keys.
 - **Heads-up**: a known extra hurdle, like a publisher launcher.
 - **GOG**: a tag on games from your GOG library. A game you own on both stores shows once. For a game you own only on GOG, the page suggests DroidDeck or GameNative, which load GOG libraries.
 - **Based on**: the data behind the entry, or "estimate only".

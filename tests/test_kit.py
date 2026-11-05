@@ -106,13 +106,16 @@ class Rules(unittest.TestCase):
         self.assertEqual(new['heads'], 'Needs EA app')
 
     def test_input_label_from_the_dataset(self):
-        self.assertEqual(evidence.input_label('c', (True, True)), 't')
-        self.assertEqual(evidence.input_label('c', (False, False)), 'o')
-        self.assertEqual(evidence.input_label('c', (True, False)), 'c')
-        self.assertEqual(evidence.input_label('o', (True, False)), 'o')
+        self.assertEqual(evidence.input_label('c', (True, True, False)), 't')
+        self.assertEqual(evidence.input_label('c', (False, False, False)), 'o')
+        self.assertEqual(evidence.input_label('c', (True, False, False)), 'c')
+        self.assertEqual(evidence.input_label('o', (True, False, False)), 'o')
         self.assertEqual(evidence.input_label('c', None), 'c')
-        self.assertEqual(self.check(R.blank('X'), inp=(False, False))['touch'], 'o')
-        self.assertEqual(self.check(dict(R.blank('X'), basis='h'), inp=(False, False))['touch'], 'c')
+        # Action genres with no controller support listed stay Controller; a tapping tag still wins.
+        self.assertEqual(evidence.input_label('c', (False, False, True)), 'c')
+        self.assertEqual(evidence.input_label('c', (False, True, True)), 't')
+        self.assertEqual(self.check(R.blank('X'), inp=(False, False, False))['touch'], 'o')
+        self.assertEqual(self.check(dict(R.blank('X'), basis='h'), inp=(False, False, False))['touch'], 'c')
 
     def test_input_dataset_is_read(self):
         with tempfile.TemporaryDirectory() as d:
@@ -124,7 +127,7 @@ class Rules(unittest.TestCase):
                         '3,C,"",""\n'
                         '4,D,"Single-player","Strategy"\n')
             got = evidence.load_input(path, {'1', '2', '3'})
-        self.assertEqual(got, {'1': (True, False), '2': (False, True)})
+        self.assertEqual(got, {'1': (True, False, True), '2': (False, True, False)})
 
     def test_input_dataset_header_with_joined_columns(self):
         # The real games.csv names "Discount" and "DLC count" as one column, "DiscountDLC count".
@@ -137,7 +140,7 @@ class Rules(unittest.TestCase):
                         '3,C,0.0,0,0,"Dev","Pub","Single-player,Partial Controller Support","Indie","Puzzle",""\n'
                         '4,D,0.0,0,"Dev","Pub","Single-player","Indie","Puzzle",""\n')
             got = evidence.load_input(path, None)
-        self.assertEqual(got, {'1': (True, False), '2': (False, True), '3': (True, False)})
+        self.assertEqual(got, {'1': (True, False, True), '2': (False, True, False), '3': (True, False, False)})
 
     def test_basis_letters(self):
         new = self.check(R.blank('X'), req=(500, 4, 'X'), pdb=(10, 9), gn='works', ac='works')
