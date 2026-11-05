@@ -46,8 +46,16 @@ ANTICHEAT_NOTE = 'Anti-cheat blocks it on Linux-based apps'
 # controller, and its player tags name the genre. Only a Controller label that wasn't
 # checked by hand changes: to Touch for genres played by tapping, else to Touch OK for
 # games with no controller support (they're played with a mouse, which taps stand in for).
+# Action genres with no controller support listed (shooters, racing, fighting, platformers,
+# rhythm, flight) stay Controller: aiming or steering by tapping is a poor stand-in for a
+# mouse, and the apps can map a gamepad to mouse and keys, as Steam Input does.
 TOUCH_TAGS = {'Card Game', 'Turn-Based', 'Turn-Based Strategy', 'Turn-Based Tactics', 'Point & Click',
               'Visual Novel', 'Board Game', 'Solitaire', 'Hidden Object', 'Word Game', 'Clicker', 'Idler'}
+ACTION_TAGS = {'FPS', 'Shooter', 'Third-Person Shooter', 'Arena Shooter', 'Hero Shooter', 'Looter Shooter',
+               'Boomer Shooter', "Shoot 'Em Up", 'Bullet Hell', 'Twin Stick Shooter', 'Top-Down Shooter',
+               'Racing', 'Arcade Racing', 'Driving', 'Fighting', '2D Fighter', '3D Fighter', "Beat 'em up",
+               'Hack and Slash', 'Character Action Game', 'Souls-like', 'Platformer', '2D Platformer',
+               '3D Platformer', 'Precision Platformer', 'Rhythm', 'Flight'}
 CONTROLLER_CATEGORIES = {'full controller support', 'partial controller support'}
 
 PAGE_DATA = re.compile(r'<script id="pl-data" type="application/json">(.*?)</script>', re.S)
@@ -167,7 +175,7 @@ def load_anticheat(path):
 
 
 def load_input(path, wanted):
-    """App ID -> (supports a controller, played by tapping) from the Steam Games Dataset games.csv."""
+    """App ID -> (supports a controller, played by tapping, action genre) from the Steam Games Dataset games.csv."""
     csv.field_size_limit(1 << 30)
     out = {}
     with open(path, encoding='utf-8', newline='') as f:
@@ -187,15 +195,15 @@ def load_input(path, wanted):
             if (wanted is not None and app not in wanted) or not categories:
                 continue
             tags = {t.strip() for t in (row.get('Tags') or '').split(',')}
-            out[app] = (bool(categories & CONTROLLER_CATEGORIES), bool(tags & TOUCH_TAGS))
+            out[app] = (bool(categories & CONTROLLER_CATEGORIES), bool(tags & TOUCH_TAGS), bool(tags & ACTION_TAGS))
     return out
 
 
 def input_label(touch, data):
     if touch != 'c' or not data:
         return touch
-    controller, tapping = data
-    return 't' if tapping else 'c' if controller else 'o'
+    controller, tapping, action = data
+    return 't' if tapping else 'c' if controller or action else 'o'
 
 
 # ---- the rules ------------------------------------------------------------------

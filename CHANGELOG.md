@@ -2,6 +2,10 @@
 
 What changed in each version of Pocket Library. Dates are when the version was published.
 
+## Version 4.3.3 (November 2026)
+
+- **Better input labels for action games.** Shooters and racing, fighting, platformer, rhythm, and flight games now stay Controller even when the Steam Games Dataset lists no controller support, instead of becoming Touch OK. Tapping is a poor way to aim or steer, and the apps can map a gamepad to mouse and keys, as Steam Input does on a Steam Deck. This changes 800 games. Games with a card, turn-based, or point-and-click tag still become Touch.
+
 ## Version 4.3.2 (November 2026)
 
 - **November data.** The monthly refresh updated GameNative, ProtonDB, PCGameBenchmarks, and anti-cheat data: 593 games changed, including 201 with better GameNative reports, 73 first GameNative verdicts, and 19 games with a new or raised weight. **Look up any game** now covers 35,003 games. DroidDeck is now 0.6.9.
