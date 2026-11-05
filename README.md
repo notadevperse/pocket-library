@@ -95,7 +95,7 @@ That's it. Next time you open the website, your library is still there. Open new
 
 To use your library on your phone too, open the files there (send them to yourself), or open the saved copy.
 
-**Look up any game.** The website also has a search box for any game with a ProtonDB report, about 34,500 games, whether you own it or not. It needs no files. Type a name, a Steam app ID, or paste a Steam store link. GOG games show up by name when they're also sold on Steam. Each result says how many ProtonDB reports it's based on, because many games have only a few.
+**Look up any game.** The website also has a search box for any game with a ProtonDB report, about 35,000 games, whether you own it or not. It needs no files. Type a name, a Steam app ID, or paste a Steam store link. GOG games show up by name when they're also sold on Steam. Each result says how many ProtonDB reports it's based on, because many games have only a few.
 
 ## Using Claude (optional)
 
@@ -140,7 +140,7 @@ Each game gets a **weight**, from Steam's minimum requirements, and separate **r
 - **GOG**: a tag on games from your GOG library. A game you own on both stores shows once. For a game you own only on GOG, the page suggests DroidDeck or GameNative, which load GOG libraries.
 - **Based on**: the data behind the entry, or "estimate only".
 
-The list covers 11,064 Steam games: Steam's top sellers, about 2,160 Steam Deck Verified games, and every game that had 5 or more ProtonDB reports as of October 2026. Of these, 10,814 are backed by data. GOG games are matched to the list by name, so a game sold only on GOG usually shows as Unknown. On the website, games outside the list show as Unknown; Claude can judge them for you. **Look up any game** searches a bigger list, every game with at least one ProtonDB report, and gives a ProtonDB verdict from even 1 report, with the count.
+The list covers 11,064 Steam games: Steam's top sellers, about 2,160 Steam Deck Verified games, and every game that had 5 or more ProtonDB reports as of October 2026. Of these, 10,831 are backed by data. GOG games are matched to the list by name, so a game sold only on GOG usually shows as Unknown. On the website, games outside the list show as Unknown; Claude can judge them for you. **Look up any game** searches a bigger list, every game with at least one ProtonDB report, and gives a ProtonDB verdict from even 1 report, with the count.
 
 With Claude, re-checking compatibility downloads about 475 MB of public data, checks your whole library against it in seconds, and has Claude look at the few games the data flags. It never crawls Steam or any app's servers. Each request counts toward your Claude usage limits.
 

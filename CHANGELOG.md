@@ -2,6 +2,11 @@
 
 What changed in each version of Pocket Library. Dates are when the version was published.
 
+## Version 4.3.2 (November 2026)
+
+- **November data.** The monthly refresh updated GameNative, ProtonDB, PCGameBenchmarks, and anti-cheat data: 593 games changed, including 201 with better GameNative reports, 73 first GameNative verdicts, and 19 games with a new or raised weight. **Look up any game** now covers 35,003 games. DroidDeck is now 0.6.9.
+- **Fixed the input labels.** The Steam Games Dataset runs two of its column names together, so the refresh read each game's publisher as its controller support and labeled 8,784 games Touch OK, even games with full controller support, such as Hollow Knight and Elden Ring. Those labels are back to Controller, and the refresh now reads the dataset correctly.
+
 ## Version 4.3.1 (October 2026)
 
 - The page, the website, and the README now name GOG wherever they describe your games: the intros, opening your files, the app guide, the legend (a new **GOG** entry), and the footer.

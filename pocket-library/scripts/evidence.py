@@ -171,7 +171,17 @@ def load_input(path, wanted):
     csv.field_size_limit(1 << 30)
     out = {}
     with open(path, encoding='utf-8', newline='') as f:
-        for row in csv.DictReader(f):
+        reader = csv.reader(f)
+        header = next(reader, [])
+        # The dataset's header runs two columns together ("DiscountDLC count"), so every
+        # column after it would be read one place off: Publishers as Categories, Genres as Tags.
+        if 'DiscountDLC count' in header:
+            i = header.index('DiscountDLC count')
+            header[i:i + 1] = ['Discount', 'DLC count']
+        for values in reader:
+            if len(values) != len(header):
+                continue  # a row that doesn't line up with the header can't be trusted
+            row = dict(zip(header, values))
             app = (row.get('AppID') or '').strip()
             categories = {c.strip().lower() for c in (row.get('Categories') or '').split(',') if c.strip()}
             if (wanted is not None and app not in wanted) or not categories:
